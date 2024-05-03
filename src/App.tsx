@@ -8,11 +8,13 @@ import Affichage from './Affichage';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
+import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 function App() {
 
   const dispatch = useAppDispatch()
   const speed = useAppSelector(state=>state.speed)
   const fileContent = useAppSelector(state=>state.fileContent)
+  const fitness = useAppSelector(state=>state.fitness)
   const state = useAppSelector(state=>state.state)
 
   function handleRun(){
@@ -45,6 +47,17 @@ function App() {
        <Slider aria-label="vitesse" value={speed} onChangeCommitted={(_,val)=>setValue(val as number)} min={100} max={5000} step={100} marks valueLabelDisplay="auto"   valueLabelFormat={valueLabelFormat}/>
       </Grid>
       <Affichage/>
+      <LineChart width={730} height={250} data={fitness}
+      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+    <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="iteration" />
+      <YAxis yAxisId="fitness" orientation='right'/>
+      <YAxis yAxisId="numberOfBin"/>
+      <Tooltip />
+      <Legend />
+      <Line yAxisId="fitness" type="monotone" dataKey="fitness" stroke="#8884d8" />
+      <Line yAxisId="numberOfBin" type="monotone" dataKey="numberOfBin" stroke="#585" />
+  </LineChart>
     </Grid>
   );
 }

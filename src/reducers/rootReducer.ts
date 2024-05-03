@@ -11,7 +11,12 @@ interface RootState {
     binHeight: number
     binWidth: number
     speed: number
-    state: "idle" | "running" | "paused" | "finished"
+    state: "idle" | "running" | "paused" | "finished",
+    fitness: Array<{
+        iteration: number,
+        fitness: number,
+        numberOfBin: number
+    }>
 }
 
 const initialState = { 
@@ -20,7 +25,8 @@ const initialState = {
     fileContent: null,
     binHeight: 0,
     binWidth: 0,
-    state: "idle"
+    state: "idle",
+    fitness: []
 } satisfies RootState as RootState
 
 const counterSlice = createSlice({
@@ -29,19 +35,29 @@ const counterSlice = createSlice({
   reducers: {
     setAlgo(state, action: PayloadAction<Metaheuristiques>) {
         state.metaheuristique = action.payload
-     },
-     setFileContent(state, action: PayloadAction<string>) {
+    },
+    setFileContent(state, action: PayloadAction<string>) {
         state.fileContent = action.payload
         const dataset = new DataSet(action.payload)
         state.binHeight = dataset.binHeight
         state.binWidth = dataset.binWidth
-     },
-     setSpeed(state, action: PayloadAction<number>) {
+    },
+    setSpeed(state, action: PayloadAction<number>) {
         state.speed = action.payload
-     },
-        setState(state, action: PayloadAction<"idle" | "running" | "paused"| "finished">) {
-            state.state = action.payload
-        },
+    },
+    setState(state, action: PayloadAction<"idle" | "running" | "paused"| "finished">) {
+        state.state = action.payload
+        if(action.payload === "running"){
+            state.fitness = []
+        }
+    },
+    addFitness(state, action: PayloadAction<{
+        iteration: number,
+        fitness: number,
+        numberOfBin: number
+    }>) {
+        state.fitness.push(action.payload)
+    }
   },
 })
 
@@ -49,6 +65,7 @@ export const {
     setAlgo,
     setFileContent,
     setSpeed,
-    setState
+    setState,
+    addFitness
 } = counterSlice.actions
 export default counterSlice.reducer
