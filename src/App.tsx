@@ -1,64 +1,152 @@
-import { Button, Grid, Slider } from '@mui/material';
-import './App.css';
-import ImportFile from './ImportFIle';
-import SelectAlgo from './SelectAlgo';
-import { useAppDispatch, useAppSelector } from './hooks';
-import { setSpeed, setState } from './reducers/rootReducer';
-import Affichage from './Affichage';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import StopIcon from '@mui/icons-material/Stop';
-import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { Grid, Paper, ThemeProvider, createTheme } from "@mui/material";
+import {
+  CartesianGrid,
+  Label,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import Affichage from "./Affichage";
+import "./App.css";
+import { useAppSelector } from "./hooks";
+import Menu from "./Menu";
+import DatasetProperty from "./DatasetProperty";
+import Header from "./Header";
+
 function App() {
+  const fitness = useAppSelector((state) => state.fitness);
+  const darkMode = useAppSelector((state) => state.darkMode);
 
-  const dispatch = useAppDispatch()
-  const speed = useAppSelector(state=>state.speed)
-  const fileContent = useAppSelector(state=>state.fileContent)
-  const fitness = useAppSelector(state=>state.fitness)
-  const state = useAppSelector(state=>state.state)
-
-  function handleRun(){
-    dispatch(setState("running"))
-  }
-
-  function setValue(value: number){
-    dispatch(setSpeed(value))
-  }
-
-  function valueLabelFormat(value: number) {
-    return `${value/1000}s`;
-  }
-
+  const darkTheme = createTheme({
+    palette: {
+      mode: darkMode ? "dark" : "light",
+    },
+  });
+  
   return (
-    <Grid container justifyContent={'center'} className="App" p={1}>
-      <Grid container item xs={8} justifyContent={'center'} alignItems={"center"} p={1}>
-        <Grid item p={1}>
-          <SelectAlgo/>
+    <ThemeProvider theme={darkTheme}>
+      <Grid
+        container
+        sx={{
+          bgcolor: "background.default",
+        }}
+        minHeight={"100%"}
+        justifyContent={"center"}
+        alignItems={"center"}
+        alignContent={"flex-start"}
+      >
+        <Grid
+          container
+          justifyContent={"space"}
+          flexDirection={"row"}
+          className="App"
+          p={1}
+          spacing={2}
+          minHeight={"100%"}
+          maxWidth={"100%"}
+        >
+          <Grid item xs={12}>
+            <Header />
+          </Grid>
+
+          <Grid item xs={2}>
+            <DatasetProperty />
+          </Grid>
+
+          <Grid item xs={10}>
+            <Grid container flexDirection={"row"} rowGap={2}>
+              <Grid item xs={12} component={Paper} p={1}>
+                <Menu />
+              </Grid>
+
+              <Grid item xs={12} component={Paper} p={1} overflow={"hidden"}>
+                <Affichage />
+              </Grid>
+
+              <Grid container spacing={1}>
+                <Grid item xs={6}>
+                  <Paper>
+                    <ResponsiveContainer height={250} width="100%">
+                      <LineChart
+                        data={fitness}
+                        syncId="anyId"
+                        margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
+                      >
+                        <CartesianGrid strokeDasharray="5 5 " />
+                        <XAxis dataKey="iteration" scale={"linear"} type="number" domain={["auto","auto"]}>
+                          <Label value="Iteration" position="bottom" />
+                        </XAxis>  
+                        <YAxis
+                          yAxisId="fitness"
+                          type="number"
+                          tickFormatter={(value) =>
+                            Number(value.toFixed(10)).toExponential()
+                          }
+                        >
+                          <Label
+                            value="Fitness"
+                            position="center"
+                            angle={-90}
+                          />
+                        </YAxis>
+                        <Tooltip contentStyle={{
+                          background: darkTheme.palette.background.default
+                        }}/>
+                        <Line
+                          yAxisId="fitness"
+                          type="monotone"
+                          dataKey="fitness"
+                          stroke="#8884d8"
+                          strokeWidth={5}
+                          isAnimationActive={false} 
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Paper>
+                </Grid>
+                <Grid item xs={6}>
+                  <Paper>
+                    <ResponsiveContainer height={250} width="100%">
+                      <LineChart
+                        data={fitness}
+                        syncId="anyId"
+                        margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
+                      >
+                        <CartesianGrid strokeDasharray="5 5 "  />
+                        <XAxis dataKey="iteration" scale={"linear"} type="number" domain={["auto","auto"]}>
+                          <Label value="Iteration" position="bottom" />
+                        </XAxis>
+                        <YAxis yAxisId="numberOfBin" type="number">
+                          <Label
+                            value="Number of bin"
+                            position="center"
+                            angle={-90}
+                          />
+                        </YAxis>
+                        <Tooltip contentStyle={{
+                          background: darkTheme.palette.background.default
+                        }}/>
+                        <Line
+                          yAxisId="numberOfBin"
+                          type="monotone"
+                          dataKey="numberOfBin"
+                          stroke="#585"
+                          strokeWidth={5}
+                          isAnimationActive={false} 
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
         </Grid>
-        <Grid item p={1}>
-          <ImportFile/>
-        </Grid>
-        <Grid item p={1}>
-          {(state === "idle" || state === "finished") && <Button variant="contained" color="primary" disabled={!fileContent} onClick={handleRun}><PlayArrowIcon/></Button>}
-          {state === "running" && <Button variant="contained" color="primary" onClick={()=>dispatch(setState("paused"))}><PauseIcon/></Button>}
-          {state === "paused" && <Button variant="contained" color="primary" onClick={()=>dispatch(setState("running"))}><PlayArrowIcon/></Button>}
-          {(state === "running" || state === "paused") && <Button variant="contained" color="error" onClick={()=>dispatch(setState("finished"))}><StopIcon/></Button>}
-        </Grid>
-       <Slider aria-label="vitesse" value={speed} onChangeCommitted={(_,val)=>setValue(val as number)} min={100} max={5000} step={100} marks valueLabelDisplay="auto"   valueLabelFormat={valueLabelFormat}/>
       </Grid>
-      <Affichage/>
-      <LineChart width={730} height={250} data={fitness}
-      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-    <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="iteration" />
-      <YAxis yAxisId="fitness" orientation='right'/>
-      <YAxis yAxisId="numberOfBin"/>
-      <Tooltip />
-      <Legend />
-      <Line yAxisId="fitness" type="monotone" dataKey="fitness" stroke="#8884d8" />
-      <Line yAxisId="numberOfBin" type="monotone" dataKey="numberOfBin" stroke="#585" />
-  </LineChart>
-    </Grid>
+    </ThemeProvider>
   );
 }
 
