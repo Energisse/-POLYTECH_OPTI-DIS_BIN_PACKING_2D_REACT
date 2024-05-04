@@ -1,8 +1,8 @@
 import { useParentSize } from "@cutting/use-get-parent-size";
 import { Grid } from "@mui/material";
-import { DataSet, Genetique, HillClimbing, Metaheuristique, RecruitSimule, Tabou } from "polytech_opti-dis_bin_packing_2d";
+import { DataSet, Genetique, HillClimbing, Metaheuristique, RecuitSimule, Tabou } from "polytech_opti-dis_bin_packing_2d";
 import Bin from "polytech_opti-dis_bin_packing_2d/dist/src/bin";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UncontrolledReactSVGPanZoom } from "react-svg-pan-zoom";
 import BinSVG from "./BinSVG";
 import ItemSVG from "./ItemSVG";
@@ -24,7 +24,6 @@ type SvgState = {
           y: number;
           width: number;
           height: number;
-          color: string;
           id: number;
         }>,
     }>
@@ -44,6 +43,7 @@ export default function Affichage() {
     const fileContent = useAppSelector(state=>state.fileContent)
     const binWidth = useAppSelector(state=>state.binWidth)
     const binHeight = useAppSelector(state=>state.binHeight)
+    const [numberOfItems,setNumberOfItems] = useState(0)
     const [binPackingData, setItems] = useState<SvgState>({
         binPakings:[],
         width:0,
@@ -94,7 +94,7 @@ export default function Affichage() {
             
             binPaking.bins.push({x:bin.x+d,y:bin.y+y,width:bin.width,height:bin.height,id})
             if(bin.item){
-                binPaking.items.push({x:bin.x+d,y:bin.y+y,width:bin.item.width,height:bin.item.height,color:bin.item.color,id:bin.item.id})
+                binPaking.items.push({x:bin.x+d,y:bin.y+y,width:bin.item.width,height:bin.item.height,id:bin.item.id})
             }
             
             bin.subBins.forEach((item,i) => {
@@ -112,9 +112,10 @@ export default function Affichage() {
         if(state === "running"){
             if(!generator){
                 const dataSet = new DataSet(fileContent!)
+                setNumberOfItems(dataSet.items.length)
                 switch(metaheuristique){
                     case "Recuit simulé":
-                        setGenerator(new RecruitSimule(dataSet).run())
+                        setGenerator(new RecuitSimule(dataSet).run())
                         break;
                     case "Tabou":
                         setGenerator( new Tabou(dataSet).run())
@@ -153,10 +154,20 @@ export default function Affichage() {
 
     },[state, speed, run, generator])
 
+    const colors = useMemo(()=>{
+        const colors = []
+        for(let i = 1; i <= numberOfItems; i++){
+            const hue = (i/numberOfItems) * 300 ; //red is 0 and 360, green is 120, blue is 240, purple is 300
+            colors.push(`hsl(${hue},100%,${(i%3+1)*25}%)`);
+        }
+        console.log(colors,numberOfItems)
+        return colors
+    },[numberOfItems])
+
     return (
         <Grid item container xs={12} ref={parent}>
         {
-          width &&   <UncontrolledReactSVGPanZoom
+          width && colors &&   <UncontrolledReactSVGPanZoom
           ref={Viewer}
           width={width} height={500}
           detectAutoPan={false}
@@ -164,7 +175,7 @@ export default function Affichage() {
             <svg width={binPackingData.width} height={binPackingData.height}> 
             {binPackingData.binPakings.map(({bins,items},i) => 
                 <>
-                    {items.sort((a,b)=>a.id-b.id).map((item,i) => <ItemSVG {...item } transitionDuration={speed/1000/2} key={item.id}/>)}
+                    {items.sort((a,b)=>a.id-b.id).map((item,i) => <ItemSVG {...item } color={colors[item.id-1]} transitionDuration={speed/1000/2} key={item.id}/>)}
                     {bins.sort((a,b)=>parseInt(a.id)-parseInt(b.id)).map((bin,i) => <BinSVG {...bin} transitionDuration={speed/1000/2} key={bin.id}/>)}    
                 </>
             )}
