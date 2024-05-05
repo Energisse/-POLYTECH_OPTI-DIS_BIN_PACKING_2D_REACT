@@ -1,9 +1,6 @@
 import { useParentSize } from "@cutting/use-get-parent-size";
 import { Grid } from "@mui/material";
-import {
-  Metaheuristique
-} from "polytech_opti-dis_bin_packing_2d";
-import Bin from "polytech_opti-dis_bin_packing_2d/dist/src/bin";
+  import Bin from "polytech_opti-dis_bin_packing_2d/dist/src/bin";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UncontrolledReactSVGPanZoom } from "react-svg-pan-zoom";
 import BinSVG from "./BinSVG";
@@ -47,15 +44,12 @@ export default function Affichage() {
     width: 0,
     height: 0,
   });
-  const [generator, setGenerator] = useState<ReturnType<
-    Metaheuristique["run"]
-  > | null>(null);
   const dispatch = useAppDispatch();
 
   const run = useCallback(() => {
     if (!dataSet) return;
-    if (!generator) return;
-    const value = generator.next();
+    if (!algo) return;
+    const value = algo.run();
     if (value.done) {
       dispatch(setState("finished"));
       return;
@@ -67,6 +61,7 @@ export default function Affichage() {
         numberOfBin: value.value.solution[0].bins.length,
       })
     );
+    console.log(value.value.solution);
 
     const solutions = value.value.solution.map((solution, y) => {
       const binPaking: SvgState["binPakings"][0] = {
@@ -133,30 +128,17 @@ export default function Affichage() {
 
       return binPaking;
     }
-  }, [dataSet, dispatch, generator]);
+  }, [dataSet, dispatch, algo]);
 
   useEffect(() => {
     if (state === "running") {
-      if (!algo) return;
-      if (!generator) {
-        setGenerator(algo?.run());
-      }
-    }
-    if (state === "finished") {
-      setGenerator(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
-
-  useEffect(() => {
-    run();
-    if (state === "running") {
+      run();
       setTimeout(() => {
         //@ts-ignore
         Viewer.current?.fitToViewer("center", "center");
       }, 100);
-    }
-  }, [generator, run, state]);
+    } 
+  }, [run, state]);
 
   useEffect(() => {
     let interval: NodeJS.Timer;
@@ -164,7 +146,7 @@ export default function Affichage() {
       interval = setInterval(run, speed);
     }
     return () => clearInterval(interval);
-  }, [state, speed, run, generator]);
+  }, [state, speed, run]);
 
   const colors = useMemo(() => {
     const colors: string[] = [];

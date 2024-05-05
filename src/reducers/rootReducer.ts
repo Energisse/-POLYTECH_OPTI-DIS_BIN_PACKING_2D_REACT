@@ -39,6 +39,7 @@ const counterSlice = createSlice({
         
         state.metaheuristique = action.payload
         state.algo = createAlgo(state.dataSet,state.metaheuristique,state.config)
+        state.fitness = []
        
     },
     setFileContent(state, action: PayloadAction<string>) {
@@ -51,6 +52,7 @@ const counterSlice = createSlice({
     setState(state, action: PayloadAction<"idle" | "running" | "paused"| "finished">) {
         if((state.state === "idle" || state.state === "finished") &&  action.payload === "running"){
             state.fitness = []
+            state.algo = createAlgo(state.dataSet,state.metaheuristique,state.config)
         }
         state.state = action.payload
     },
