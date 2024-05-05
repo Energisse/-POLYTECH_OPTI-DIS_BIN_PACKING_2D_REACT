@@ -49,20 +49,22 @@ export default function Affichage() {
   const run = useCallback(() => {
     if (!dataSet) return;
     if (!algo) return;
-    const value = algo.run();
+    let value:ReturnType<typeof algo.run> = {done: false, value: {solution: [], iteration: 0}};
+    let fitness:Parameters<typeof addFitness>[0] = [];
+    for(let i = 0; i < speed.iterationCount; i++){
+      value = algo.run();
+      if(value.done){
+        break;
+      }
+      fitness.push({iteration: value.value.iteration, fitness: value.value.solution[0].fitness, numberOfBin: value.value.solution[0].bins.length})
+    }
+
+    dispatch(addFitness(fitness));
+    
     if (value.done) {
       dispatch(setState("finished"));
       return;
     }
-    dispatch(
-      addFitness({
-        iteration: value.value.iteration,
-        fitness: value.value.solution[0].fitness,
-        numberOfBin: value.value.solution[0].bins.length,
-      })
-    );
-    console.log(value.value.solution);
-
     const solutions = value.value.solution.map((solution, y) => {
       const binPaking: SvgState["binPakings"][0] = {
         bins: [],
@@ -96,7 +98,6 @@ export default function Affichage() {
         (value.value.solution.length - 1) * dataSet.binHeight * paddingPercent +
         dataSet.binHeight,
     });
-
     function draw(bin: Bin, d: number, y: number, id: string) {
       const binPaking: SvgState["binPakings"][0] = {
         bins: [],
@@ -128,7 +129,7 @@ export default function Affichage() {
 
       return binPaking;
     }
-  }, [dataSet, dispatch, algo]);
+  }, [dataSet, algo, dispatch, speed.iterationCount]);
 
   useEffect(() => {
     if (state === "running") {
@@ -143,10 +144,10 @@ export default function Affichage() {
   useEffect(() => {
     let interval: NodeJS.Timer;
     if (state === "running") {
-      interval = setInterval(run, speed);
+      interval = setInterval(run, speed.interval);
     }
     return () => clearInterval(interval);
-  }, [state, speed, run]);
+  }, [state, speed.interval, run]);
 
   const colors = useMemo(() => {
     const colors: string[] = [];
@@ -176,7 +177,7 @@ export default function Affichage() {
                     <ItemSVG
                       {...item}
                       color={colors[item.id - 1]}
-                      transitionDuration={speed / 1000 / 2}
+                      transitionDuration={speed.interval / 1000 / 2}
                       key={item.id}
                     />
                   ))}
@@ -185,7 +186,7 @@ export default function Affichage() {
                   .map((bin, i) => (
                     <BinSVG
                       {...bin}
-                      transitionDuration={speed / 1000 / 2}
+                      transitionDuration={speed.interval / 1000 / 2}
                       key={bin.id}
                     />
                   ))}

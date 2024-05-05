@@ -1,7 +1,7 @@
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
-import { Button, Grid, Slider } from "@mui/material";
+import { Button, Grid, Slider, Typography } from "@mui/material";
 import ImportFile from './ImportFIle';
 import SelectAlgo from './SelectAlgo';
 import { setSpeed, setState } from './reducers/rootReducer';
@@ -10,7 +10,7 @@ import FormTabouConfig from './Menu/FormTabouConfig';
 import FormRecuitSimuleConfig from './Menu/FormRecuitSimuleConfig';
 import FormHillClimbingConfig from './Menu/FormHillClimbingConfig';
 import FormGenetiqueConfig from './Menu/FormGenetiqueConfig';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function Menu() {
 
@@ -19,13 +19,30 @@ export default function Menu() {
     const fileContent = useAppSelector(state=>state.dataSet)
     const state = useAppSelector(state=>state.state)
     const metaheuristique = useAppSelector(state=>state.metaheuristique)
+    const [selectedSpeed,setSelectedSpeed] = useState(speed)
 
     function handleRun(){
       dispatch(setState("running"))
     }
   
-    function setValue(value: number){
-      dispatch(setSpeed(value))
+    function commitChange(){
+      dispatch(setSpeed(selectedSpeed))
+    }
+
+    function setValue(type: "interval" | "iterationCount", value: number){
+      if(type === "interval"){
+        setSelectedSpeed(
+          {
+            interval: value,
+            iterationCount: Math.min(selectedSpeed.iterationCount,10+10*(value/1000)),
+          } )
+          return
+      }
+      setSelectedSpeed(
+        {
+          ...speed,
+          [type]: value
+        } )
     }
   
     function valueLabelFormat(value: number) {
@@ -44,7 +61,7 @@ export default function Menu() {
           return <FormGenetiqueConfig/>
       }
       },[metaheuristique])
-  
+
     return (
         <Grid container justifyContent={'center'} className="App" p={1}>
             <Grid item p={1}>
@@ -62,7 +79,12 @@ export default function Menu() {
             <Grid item xs={12}>
               {form}
             </Grid>
-        <Slider aria-label="vitesse" value={speed} onChangeCommitted={(_,val)=>setValue(val as number)} min={100} max={5000} step={100} marks valueLabelDisplay="auto"   valueLabelFormat={valueLabelFormat}/>
+       
+          <Typography gutterBottom>Temps entre chaque affichage : {selectedSpeed.interval/1000}s</Typography>
+          <Slider aria-label="vitesse" value={selectedSpeed.interval} onChangeCommitted={commitChange} onChange={(_,val)=>setValue("interval",val as number)} min={100} max={5000} step={100} marks valueLabelDisplay="auto"   valueLabelFormat={valueLabelFormat}/>
+
+          <Typography gutterBottom>Iteration par affichage : {selectedSpeed.iterationCount}</Typography>
+          <Slider aria-label="vitesse" value={selectedSpeed.iterationCount} onChangeCommitted={commitChange} onChange={(_,val)=>setValue("iterationCount",val as number)} min={1} max={10+10*(selectedSpeed.interval/1000)} marks valueLabelDisplay="auto"/>
         </Grid>
     );
 }

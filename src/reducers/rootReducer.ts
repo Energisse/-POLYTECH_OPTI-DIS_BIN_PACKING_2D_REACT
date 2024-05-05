@@ -9,7 +9,10 @@ interface RootState {
     metaheuristique: Metaheuristiques
     algo: Metaheuristique | null,
     dataSet: DataSet | null,
-    speed: number
+    speed: {
+        interval: number,
+        iterationCount: number
+    },
     state: "idle" | "running" | "paused" | "finished",
     config?: TabouConfig | GenetiqueConfig | RecuitSimuleConfig | HillClimbingConfig,
     fitness: Array<{
@@ -23,7 +26,10 @@ interface RootState {
 const initialState = { 
     metaheuristique: "Tabou",
     algo: null,
-    speed:1000,
+    speed: {
+        interval: 1000,
+        iterationCount: 1
+    },
     dataSet: null,
     state: "idle",
     fitness: [],
@@ -46,7 +52,10 @@ const counterSlice = createSlice({
         state.dataSet = new DataSet(action.payload)
         state.algo = createAlgo(state.dataSet,state.metaheuristique,state.config)
     },
-    setSpeed(state, action: PayloadAction<number>) {
+    setSpeed(state, action: PayloadAction<{
+        interval: number,
+        iterationCount: number
+    }>) {
         state.speed = action.payload
     },
     setState(state, action: PayloadAction<"idle" | "running" | "paused"| "finished">) {
@@ -60,17 +69,19 @@ const counterSlice = createSlice({
         iteration: number,
         fitness: number,
         numberOfBin: number
-    }>) {
-        // Remove last element if it's the same as the one we want to add
-        if(state.fitness.length >= 2){ 
-            const last = state.fitness.at(-1)!
-            const beforeLast = state.fitness.at(-2)!
-            if(last.fitness === beforeLast.fitness && last.numberOfBin === beforeLast.numberOfBin  && action.payload.fitness === last.fitness && action.payload.numberOfBin === last.numberOfBin){
-                state.fitness.at(-1)!.iteration = action.payload.iteration
-                return
+    }[]>) {
+        action.payload.forEach((value)=>{
+            // Remove last element if it's the same as the one we want to add
+            if(state.fitness.length >= 2){ 
+                const last = state.fitness.at(-1)!
+                const beforeLast = state.fitness.at(-2)!
+                if(last.fitness === beforeLast.fitness && last.numberOfBin === beforeLast.numberOfBin  && value.fitness === last.fitness && value.numberOfBin === last.numberOfBin){
+                    state.fitness.at(-1)!.iteration = value.iteration
+                    return
+                }
             }
-        }
-        state.fitness.push(action.payload)
+            state.fitness.push(value)
+        })
     },
     setConfig(state, action: PayloadAction<TabouConfig | GenetiqueConfig | RecuitSimuleConfig | HillClimbingConfig>) {
         state.config = action.payload
