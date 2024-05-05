@@ -1,8 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 import rootReducer from './reducers/rootReducer'
+import metaheuristique from './reducers/metaheuristique'
 
 const store = configureStore({
-  reducer: rootReducer,
+  reducer: {
+    rootReducer,
+    metaheuristique,
+  },
   devTools: process.env.NODE_ENV === 'development',
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

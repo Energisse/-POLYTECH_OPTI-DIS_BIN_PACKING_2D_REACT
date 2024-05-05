@@ -4,7 +4,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import { Button, Grid, Slider, Typography } from "@mui/material";
 import ImportFile from './ImportFIle';
 import SelectAlgo from './SelectAlgo';
-import { setSpeed, setState } from './reducers/rootReducer';
+import { pause, setSpeed, start, stop } from './reducers/metaheuristique';
 import { useAppDispatch, useAppSelector } from './hooks';
 import FormTabouConfig from './Menu/FormTabouConfig';
 import FormRecuitSimuleConfig from './Menu/FormRecuitSimuleConfig';
@@ -15,14 +15,14 @@ import { useMemo, useState } from 'react';
 export default function Menu() {
 
     const dispatch = useAppDispatch()
-    const speed = useAppSelector(state=>state.speed)
-    const fileContent = useAppSelector(state=>state.dataSet)
-    const state = useAppSelector(state=>state.state)
-    const metaheuristique = useAppSelector(state=>state.metaheuristique)
+    const speed = useAppSelector(state=>state.metaheuristique.speed)
+    const fileContent = useAppSelector(state=>state.metaheuristique.dataSet)
+    const state = useAppSelector(state=>state.metaheuristique.state)
+    const metaheuristique = useAppSelector(state=>state.metaheuristique.metaheuristique )
     const [selectedSpeed,setSelectedSpeed] = useState(speed)
 
     function handleRun(){
-      dispatch(setState("running"))
+      dispatch(start())
     }
   
     function commitChange(){
@@ -72,9 +72,9 @@ export default function Menu() {
             </Grid>
             <Grid item p={1}>
             {(state === "idle" || state === "finished") && <Button variant="contained" color="primary" disabled={!fileContent} onClick={handleRun}><PlayArrowIcon/></Button>}
-            {state === "running" && <Button variant="contained" color="primary" onClick={()=>dispatch(setState("paused"))}><PauseIcon/></Button>}
-            {state === "paused" && <Button variant="contained" color="primary" onClick={()=>dispatch(setState("running"))}><PlayArrowIcon/></Button>}
-            {(state === "running" || state === "paused") && <Button variant="contained" color="error" onClick={()=>dispatch(setState("finished"))}><StopIcon/></Button>}
+            {state === "running" && <Button variant="contained" color="primary" onClick={()=>dispatch(pause())}><PauseIcon/></Button>}
+            {state === "paused" && <Button variant="contained" color="primary" onClick={()=>dispatch(start())}><PlayArrowIcon/></Button>}
+            {(state === "running" || state === "paused") && <Button variant="contained" color="error" onClick={()=>dispatch(stop())}><StopIcon/></Button>}
             </Grid>
             <Grid item xs={12}>
               {form}

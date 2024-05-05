@@ -17,8 +17,8 @@ import DatasetProperty from "./DatasetProperty";
 import Header from "./Header";
 
 function App() {
-  const fitness = useAppSelector((state) => state.fitness);
-  const darkMode = useAppSelector((state) => state.darkMode);
+  const fitness = useAppSelector((state) => state.metaheuristique.fitness);
+  const darkMode = useAppSelector((state) => state.rootReducer.darkMode);
 
   const darkTheme = createTheme({
     palette: {

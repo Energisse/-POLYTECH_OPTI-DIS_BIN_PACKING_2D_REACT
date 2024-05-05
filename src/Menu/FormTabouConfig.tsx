@@ -2,24 +2,24 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { TabouConfig } from 'polytech_opti-dis_bin_packing_2d/dist/src/metaheuristique/tabou';
 import { Button, TextField } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { setConfig } from "../reducers/rootReducer";
+import { setConfig } from "../reducers/metaheuristique";
 import { useEffect } from "react";
 import isEqual from "lodash.isequal";
 
 export default function FormTabouConfig() {
-    const algo = useAppSelector(state=>state.algo)
+    const config = useAppSelector(state=>state.metaheuristique.config)
     
     const { handleSubmit, control, reset,watch } = useForm<TabouConfig>({
-        defaultValues: algo?.config ||  {
+        defaultValues: config ||  {
           iteration: 0,
           tabouSize: 0,
         },
       })
       
-    useEffect(()=>{
-        if(!algo?.config)return
-        reset(algo?.config)
-    },[algo?.config, reset])
+      useEffect(()=>{
+        if(!config)return
+        reset(config)
+    },[config, reset])
 
     const dispatch = useAppDispatch()
     
@@ -63,7 +63,7 @@ export default function FormTabouConfig() {
             }
         />
 
-        <Button type="submit" variant="contained" disabled={isEqual(algo?.config,
+        <Button type="submit" variant="contained" disabled={isEqual(config,
             Object.entries(watch()).reduce((acc,[k,v])=>({...acc,[k]:+v}),{})
         )}>
             Valider

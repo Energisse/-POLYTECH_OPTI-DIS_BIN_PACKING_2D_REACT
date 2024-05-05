@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import { ChangeEvent } from "react";
 import { useAppDispatch } from "./hooks";
-import { setFileContent } from "./reducers/rootReducer";
+import { setFileContent } from "./reducers/metaheuristique";
 
 export default function ImportFile() {
 

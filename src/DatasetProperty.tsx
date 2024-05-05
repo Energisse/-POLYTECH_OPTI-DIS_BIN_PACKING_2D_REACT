@@ -3,7 +3,7 @@ import { useAppSelector } from "./hooks"
 
 export default function DatasetProperty(){
     
-    const dataSet = useAppSelector(state=>state.dataSet)
+    const dataSet = useAppSelector(state=>state.metaheuristique.dataSet)
     
     return <>
         {/* {dataset && <>

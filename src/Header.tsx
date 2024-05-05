@@ -8,7 +8,7 @@ export default function Header() {
 
     const dispatch = useAppDispatch()
 
-    const darkMode = useAppSelector(state=>state.darkMode)
+    const darkMode = useAppSelector(state=>state.rootReducer.darkMode)
 
     function toggleDarkMode(){
         dispatch(setDarkMode(!darkMode))

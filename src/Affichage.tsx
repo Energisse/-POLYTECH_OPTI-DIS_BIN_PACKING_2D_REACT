@@ -1,153 +1,33 @@
 import { useParentSize } from "@cutting/use-get-parent-size";
 import { Grid } from "@mui/material";
-  import Bin from "polytech_opti-dis_bin_packing_2d/dist/src/bin";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { UncontrolledReactSVGPanZoom } from "react-svg-pan-zoom";
 import BinSVG from "./BinSVG";
 import ItemSVG from "./ItemSVG";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { addFitness, setState } from "./reducers/rootReducer";
-
-type SvgState = {
-  binPakings: Array<{
-    bins: Array<{
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      id: string;
-    }>;
-    items: Array<{
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      id: number;
-    }>;
-  }>;
-  width: number;
-  height: number;
-};
-
-const paddingPercent = 1.1;
+import { useAppSelector } from "./hooks";
 
 export default function Affichage() {
   const parent = useRef(null);
   const Viewer = useRef<UncontrolledReactSVGPanZoom>(null);
   const { width } = useParentSize(parent);
-  const speed = useAppSelector((state) => state.speed);
-  const state = useAppSelector((state) => state.state);
-  const algo = useAppSelector((state) => state.algo);
-  const dataSet = useAppSelector((state) => state.dataSet);
-  const [binPackingData, setItems] = useState<SvgState>({
-    binPakings: [],
-    width: 0,
-    height: 0,
-  });
-  const dispatch = useAppDispatch();
-
-  const run = useCallback(() => {
-    if (!dataSet) return;
-    if (!algo) return;
-    let value:ReturnType<typeof algo.run> = {done: false, value: {solution: [], iteration: 0}};
-    let fitness:Parameters<typeof addFitness>[0] = [];
-    for(let i = 0; i < speed.iterationCount; i++){
-      value = algo.run();
-      if(value.done){
-        break;
-      }
-      fitness.push({iteration: value.value.iteration, fitness: value.value.solution[0].fitness, numberOfBin: value.value.solution[0].bins.length})
-    }
-
-    dispatch(addFitness(fitness));
-    
-    if (value.done) {
-      dispatch(setState("finished"));
-      return;
-    }
-    const solutions = value.value.solution.map((solution, y) => {
-      const binPaking: SvgState["binPakings"][0] = {
-        bins: [],
-        items: [],
-      };
-
-      solution.bins.forEach((bin, i) => {
-        let result = draw(
-          bin,
-          i * (dataSet.binWidth * paddingPercent),
-          y * (dataSet.binWidth * paddingPercent),
-          i.toString()
-        );
-        binPaking.bins.push(...result.bins);
-        binPaking.items.push(...result.items);
-      });
-      return binPaking;
-    });
-    setItems({
-      binPakings: solutions,
-      width:
-        (value.value.solution.reduce(
-          (acc, solution) => Math.max(acc, solution.bins.length),
-          0
-        ) -
-          1) *
-          dataSet.binWidth *
-          paddingPercent +
-        dataSet.binWidth,
-      height:
-        (value.value.solution.length - 1) * dataSet.binHeight * paddingPercent +
-        dataSet.binHeight,
-    });
-    function draw(bin: Bin, d: number, y: number, id: string) {
-      const binPaking: SvgState["binPakings"][0] = {
-        bins: [],
-        items: [],
-      };
-
-      binPaking.bins.push({
-        x: bin.x + d,
-        y: bin.y + y,
-        width: bin.width,
-        height: bin.height,
-        id,
-      });
-      if (bin.item) {
-        binPaking.items.push({
-          x: bin.x + d,
-          y: bin.y + y,
-          width: bin.item.width,
-          height: bin.item.height,
-          id: bin.item.id,
-        });
-      }
-
-      bin.subBins.forEach((item, i) => {
-        let result = draw(item, d, y, id + "-" + i);
-        binPaking.bins.push(...result.bins);
-        binPaking.items.push(...result.items);
-      });
-
-      return binPaking;
-    }
-  }, [dataSet, algo, dispatch, speed.iterationCount]);
+  const speed = useAppSelector((state) => state.metaheuristique.speed);
+  const state = useAppSelector((state) => state.metaheuristique.state);
+  const metaheuristique = useAppSelector((state) => state.metaheuristique.metaheuristique);
+  const dataSet = useAppSelector((state) => state.metaheuristique.dataSet);
+  const binPakings = useAppSelector((state) => state.metaheuristique.binPakings);
 
   useEffect(() => {
     if (state === "running") {
-      run();
-      setTimeout(() => {
         //@ts-ignore
         Viewer.current?.fitToViewer("center", "center");
-      }, 100);
+        setTimeout(() => {
+        //@ts-ignore
+        Viewer.current?.fitToViewer("center", "center");
+      }, speed.interval);
     } 
-  }, [run, state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state,metaheuristique,dataSet]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timer;
-    if (state === "running") {
-      interval = setInterval(run, speed.interval);
-    }
-    return () => clearInterval(interval);
-  }, [state, speed.interval, run]);
 
   const colors = useMemo(() => {
     const colors: string[] = [];
@@ -168,12 +48,10 @@ export default function Affichage() {
           height={500}
           detectAutoPan={false}
         >
-          <svg width={binPackingData.width} height={binPackingData.height}>
-            {binPackingData.binPakings.map(({ bins, items }, i) => (
+          <svg width={binPakings.width} height={binPakings.height}>
+            {binPakings.binPacking.map(({ bins, items }, i) => (
               <>
-                {items
-                  .sort((a, b) => a.id - b.id)
-                  .map((item) => (
+                {items.map((item) => (
                     <ItemSVG
                       {...item}
                       color={colors[item.id - 1]}
@@ -181,9 +59,7 @@ export default function Affichage() {
                       key={item.id}
                     />
                   ))}
-                {bins
-                  .sort((a, b) => parseInt(a.id) - parseInt(b.id))
-                  .map((bin, i) => (
+                {bins.map((bin, i) => (
                     <BinSVG
                       {...bin}
                       transitionDuration={speed.interval / 1000 / 2}

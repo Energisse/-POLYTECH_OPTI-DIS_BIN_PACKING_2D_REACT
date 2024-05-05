@@ -4,14 +4,14 @@ import { TabouConfig } from 'polytech_opti-dis_bin_packing_2d/dist/src/metaheuri
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { setConfig } from "../reducers/rootReducer";
+import { setConfig } from "../reducers/metaheuristique";
 import isEqual from "lodash.isequal";
 
 export default function FormRecuitSimuleConfig() {
-    const algo = useAppSelector(state=>state.algo)
+    const config = useAppSelector(state=>state.metaheuristique.config)
   
     const { handleSubmit, control, reset, watch } = useForm<RecuitSimuleConfig>({
-        defaultValues: algo?.config ||  {
+        defaultValues: config ||  {
           iteration: 0,
           iterationByTemperature: 0,
           temperature: 0,
@@ -19,10 +19,10 @@ export default function FormRecuitSimuleConfig() {
         },
       }) 
       
-    useEffect(()=>{
-        if(!algo?.config)return
-        reset(algo?.config)
-    },[algo?.config, reset])
+      useEffect(()=>{
+        if(!config)return
+        reset(config)
+    },[config, reset])
 
     const dispatch = useAppDispatch()
     
@@ -104,7 +104,7 @@ export default function FormRecuitSimuleConfig() {
             }
         />
 
-        <Button type="submit" variant="contained" disabled={isEqual(algo?.config,
+        <Button type="submit" variant="contained" disabled={isEqual(config,
             Object.entries(watch()).reduce((acc,[k,v])=>({...acc,[k]:+v}),{})
         )}>
             Valider

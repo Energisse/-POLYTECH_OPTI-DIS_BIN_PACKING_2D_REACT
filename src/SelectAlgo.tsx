@@ -1,10 +1,10 @@
 import { MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "./hooks"
-import { Metaheuristiques, setAlgo,metaheuristiques } from "./reducers/rootReducer";
+import { Metaheuristiques, setAlgo,metaheuristiques } from "./reducers/metaheuristique";
 
 export default function SelectAlgo() {
 
-    const selectedAlgo = useAppSelector(state=>state.metaheuristique)
+    const selectedAlgo = useAppSelector(state=>state.metaheuristique.metaheuristique)
     const dispatch = useAppDispatch()
 
     const handleChangeAlgo = (event: SelectChangeEvent<Metaheuristiques>) => {
