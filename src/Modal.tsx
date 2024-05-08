@@ -26,15 +26,14 @@ function Modal({
   const dispatch = useAppDispatch();
 
   const [selectedAlgo, setSelectedAlgo] = useState<Metaheuristiques>("Tabou");
-  const [fileContent, setFileContent] = useState<string>("");
+  const [rawDataSet, setrawDataSet] = useState<string>("");
 
   function onChange(event: ChangeEvent<HTMLInputElement>) {
     if (!event.target.files) return;
-    console.log(event.target);
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-      setFileContent(e.target?.result as string);
+      setrawDataSet(e.target?.result as string);
     };
     reader.readAsText(file);
   }
@@ -50,7 +49,7 @@ function Modal({
           dispatch(
             createSolition({
               metaheuristique: selectedAlgo,
-              fileContent,
+              rawDataSet,
             })
           );
           handleClose();
@@ -85,7 +84,7 @@ function Modal({
             Importer un fichier
           </Button>
         </label>
-        <pre>{fileContent}</pre>
+        <pre>{rawDataSet}</pre>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Annuler</Button>

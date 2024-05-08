@@ -6,7 +6,7 @@ export interface MainToWorkerEventMap {
         data: any
     }>;
     "init": CustomEvent<{
-        dataSet: string,
+        rawDataSet: string,
         metaheuristique: Metaheuristiques,
         config?: MetaheuristiqueConfigs,
         speed: {
@@ -53,7 +53,6 @@ declare global {
 }
 
 DedicatedWorkerGlobalScope.prototype.emit = function (message) {
-    console.log("emit", message)
     this.postMessage(message);
 };
 

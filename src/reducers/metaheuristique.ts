@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { DataSet, GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
+import { GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
 import { RootState } from '../store';
 
 Worker.prototype.emit = function (...data) {
@@ -42,16 +42,17 @@ interface MetaheuristiqueState {
     current: number,
     metaheuristiques: Array<{
         metaheuristique: Metaheuristiques
-        dataSet: DataSet | null,
+        rawDataSet?: string,
+        width?: number,
+        height?: number,
         speed: {
             interval: number,
             iterationCount: number
         },
         state: "idle" | "running" | "paused" | "finished",
         config?: TabouConfig | GenetiqueConfig | RecuitSimuleConfig | HillClimbingConfig,
-        fitness: MetaheuristiqueStatistic[],
+        statistic: MetaheuristiqueStatistic[],
         binPakings: BinPackingSvgs
-        test: string,
     }>
 }
 
@@ -62,21 +63,6 @@ const initialState = {
 
 const workers: Worker[] = [];
 
-
-export const stop = createAsyncThunk<any, { id: number }, { state: RootState }>('stop', ({ id }, thunkAPI) => {
-    workers[id].emit("stop")
-    thunkAPI.dispatch(methaeuristiqueSlice.actions.setState({ id, state: "idle" }))
-})
-
-export const pause = createAsyncThunk<any, { id: number }, { state: RootState }>('pause', ({ id }, thunkAPI) => {
-    workers[id].emit("pause")
-    thunkAPI.dispatch(methaeuristiqueSlice.actions.setState({ id, state: "paused" }))
-})
-
-export const start = createAsyncThunk<any, { id: number }, { state: RootState }>('start', ({ id }, thunkAPI) => {
-    thunkAPI.dispatch(methaeuristiqueSlice.actions.setState({ id, state: "running" }))
-    workers[id].emit("start")
-})
 
 const methaeuristiqueSlice = createSlice({
     name: 'rootReducer',
@@ -96,7 +82,18 @@ const methaeuristiqueSlice = createSlice({
             state: "idle" | "running" | "paused" | "finished"
         }>) {
             if ((state.metaheuristiques[id].state === "idle" || state.metaheuristiques[id].state === "finished") && _state === "running") {
-                state.metaheuristiques[id].fitness = []
+                state.metaheuristiques[id].statistic = []
+            }
+            switch (_state) {
+                case "running":
+                    workers[id].emit("start")
+                    break
+                case "paused":
+                    workers[id].emit("pause")
+                    break
+                case "idle":
+                    workers[id].emit("stop")
+                    break
             }
             state.metaheuristiques[id].state = _state
         },
@@ -110,16 +107,7 @@ const methaeuristiqueSlice = createSlice({
             }>
         }>) {
             stats.forEach((value) => {
-                // Remove last element if it's the same as the one we want to add
-                if (state.metaheuristiques[id].fitness.length >= 2) {
-                    const last = state.metaheuristiques[id].fitness.at(-1)!
-                    const beforeLast = state.metaheuristiques[id].fitness.at(-2)!
-                    if (last.fitness === beforeLast.fitness && last.numberOfBin === beforeLast.numberOfBin && value.fitness === last.fitness && value.numberOfBin === last.numberOfBin) {
-                        state.metaheuristiques[id].fitness.at(-1)!.iteration = value.iteration
-                        return
-                    }
-                }
-                state.metaheuristiques[id].fitness.push(value)
+                state.metaheuristiques[id].statistic.push(value)
             })
         },
         setConfig(state, { payload: { id, config } }: PayloadAction<{
@@ -146,8 +134,8 @@ const methaeuristiqueSlice = createSlice({
         }>) {
             state.current = id
         },
-        createSolition(state, { payload: { fileContent, metaheuristique } }: PayloadAction<{
-            fileContent: string,
+        createSolition(state, { payload: { rawDataSet, metaheuristique } }: PayloadAction<{
+            rawDataSet: string,
             metaheuristique: Metaheuristiques,
         }>) {
             state.metaheuristiques.push({
@@ -156,15 +144,14 @@ const methaeuristiqueSlice = createSlice({
                     interval: 1000,
                     iterationCount: 1
                 },
-                dataSet: new DataSet(fileContent),
+                rawDataSet: rawDataSet,
                 state: "idle",
-                fitness: [],
+                statistic: [],
                 binPakings: {
                     binPacking: [],
                     width: 0,
                     height: 0
                 },
-                test: fileContent,
             })
             state.current = state.metaheuristiques.length - 1
             createWorker(state.metaheuristiques.length - 1)
@@ -188,12 +175,14 @@ function createWorker(id: number) {
         const worker = new Worker(new URL("../utils/worker.ts", import.meta.url))
         workers[id] = worker
 
-        if (store.getState().metaheuristique.metaheuristiques[id].dataSet && store.getState().metaheuristique.metaheuristiques[id].metaheuristique) {
+        const { rawDataSet, metaheuristique, config, speed } = store.getState().metaheuristique.metaheuristiques[id]
+
+        if (rawDataSet && metaheuristique) {
             worker.emit("init", {
-                dataSet: store.getState().metaheuristique.metaheuristiques[id].test,
-                metaheuristique: store.getState().metaheuristique.metaheuristiques[id].metaheuristique,
-                config: store.getState().metaheuristique.metaheuristiques[id].config,
-                speed: store.getState().metaheuristique.metaheuristiques[id].speed
+                rawDataSet,
+                metaheuristique,
+                config,
+                speed
             })
         }
 
@@ -235,7 +224,6 @@ function createWorker(id: number) {
     })
 }
 
-
 export const {
     setSpeed,
     editConfig,
@@ -245,3 +233,28 @@ export const {
     removeSolition
 } = methaeuristiqueSlice.actions
 export default methaeuristiqueSlice.reducer
+
+export const selectAllStatistic = createSelector(
+    [(state: RootState) => state.metaheuristique.metaheuristiques],
+    (metaheuristiques) => {
+        const resultat: {
+            iteration: number,
+            solutions: {
+                fitness: number,
+                numberOfBin: number
+            }[]
+        }[] = []
+        metaheuristiques.forEach(({ statistic }) => {
+            statistic.forEach(({ iteration, ...stats }) => {
+                if (!resultat[iteration - 1]) {
+                    resultat[iteration - 1] = {
+                        iteration,
+                        solutions: []
+                    }
+                }
+                resultat[iteration - 1].solutions.push(stats)
+            })
+        })
+        return resultat
+    }
+);

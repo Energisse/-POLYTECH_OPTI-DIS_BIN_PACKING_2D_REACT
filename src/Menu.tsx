@@ -8,15 +8,15 @@ import FormHillClimbingConfig from "./Menu/FormHillClimbingConfig";
 import FormRecuitSimuleConfig from "./Menu/FormRecuitSimuleConfig";
 import FormTabouConfig from "./Menu/FormTabouConfig";
 import { useAppDispatch, useAppSelector } from "./hooks";
-import { pause, setSpeed, start, stop } from "./reducers/metaheuristique";
+import { setSpeed, setState } from "./reducers/metaheuristique";
 
 export default function Menu({ id }: { id: number }) {
   const dispatch = useAppDispatch();
   const speed = useAppSelector(
     (state) => state.metaheuristique.metaheuristiques[id].speed
   );
-  const fileContent = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].dataSet
+  const rawDataSet = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].rawDataSet
   );
   const state = useAppSelector(
     (state) => state.metaheuristique.metaheuristiques[id].state
@@ -26,14 +26,10 @@ export default function Menu({ id }: { id: number }) {
   );
   const [selectedSpeed, setSelectedSpeed] = useState(speed);
 
-  function handleRun() {
-    dispatch(start({ id: id }));
-  }
-
   function commitChange() {
     dispatch(
       setSpeed({
-        id: 0,
+        id,
         ...selectedSpeed,
       })
     );
@@ -70,8 +66,8 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="primary"
-            disabled={!fileContent}
-            onClick={handleRun}
+            disabled={!rawDataSet}
+            onClick={() => dispatch(setState({ id: id, state: "running" }))}
           >
             <PlayArrowIcon />
           </Button>
@@ -80,7 +76,7 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => dispatch(pause({ id: id }))}
+            onClick={() => dispatch(setState({ id: id, state: "idle" }))}
           >
             <PauseIcon />
           </Button>
@@ -89,7 +85,7 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => dispatch(start({ id: id }))}
+            onClick={() => dispatch(setState({ id: id, state: "running" }))}
           >
             <PlayArrowIcon />
           </Button>
@@ -98,7 +94,7 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="error"
-            onClick={() => dispatch(stop({ id: id }))}
+            onClick={() => dispatch(setState({ id: id, state: "finished" }))}
           >
             <StopIcon />
           </Button>

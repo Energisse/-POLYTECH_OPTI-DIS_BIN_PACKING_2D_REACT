@@ -17,7 +17,7 @@ import { useAppSelector } from "./hooks";
 
 function Solution({ id }: { id: number }) {
   const fitness = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].fitness
+    (state) => state.metaheuristique.metaheuristiques[id].statistic
   );
   const theme = useTheme();
   return (

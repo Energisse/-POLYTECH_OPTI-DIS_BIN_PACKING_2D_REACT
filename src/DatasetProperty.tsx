@@ -8,11 +8,18 @@ import {
   TableRow,
 } from "@mui/material";
 import { useAppSelector } from "./hooks";
+import { DataSet } from "polytech_opti-dis_bin_packing_2d";
+import { useMemo } from "react";
 
 export default function DatasetProperty({ id }: { id: number }) {
-  const dataSet = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].dataSet
+  const rawDataSet = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].rawDataSet
   );
+
+  const dataSet = useMemo(() => {
+    if (!rawDataSet) return null;
+    return new DataSet(rawDataSet);
+  }, [rawDataSet]);
 
   return (
     <>

@@ -5,6 +5,7 @@ import { UncontrolledReactSVGPanZoom } from "react-svg-pan-zoom";
 import BinSVG from "./BinSVG";
 import ItemSVG from "./ItemSVG";
 import { useAppSelector } from "./hooks";
+import { DataSet } from "polytech_opti-dis_bin_packing_2d";
 
 export default function Affichage({ id }: { id: number }) {
   const parent = useRef(null);
@@ -16,11 +17,8 @@ export default function Affichage({ id }: { id: number }) {
   const state = useAppSelector(
     (state) => state.metaheuristique.metaheuristiques[id].state
   );
-  const metaheuristique = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].metaheuristique
-  );
-  const dataSet = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].dataSet
+  const rawDataSet = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].rawDataSet
   );
   const binPakings = useAppSelector(
     (state) => state.metaheuristique.metaheuristiques[id].binPakings
@@ -36,22 +34,23 @@ export default function Affichage({ id }: { id: number }) {
       }, speed.interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, metaheuristique, dataSet]);
+  }, [state]);
 
   useEffect(() => {
-      //@ts-ignore
-      Viewer.current?.fitToViewer("center", "center");
-  },[id])
+    //@ts-ignore
+    Viewer.current?.fitToViewer("center", "center");
+  }, [id]);
 
   const colors = useMemo(() => {
     const colors: string[] = [];
-    if (!dataSet) return colors;
+    if (!rawDataSet) return colors;
+    const dataSet = new DataSet(rawDataSet);
     for (let i = 1; i <= dataSet.items.length; i++) {
       const hue = (i / dataSet.items.length) * 300; //red is 0 and 360, green is 120, blue is 240, purple is 300
       colors.push(`hsl(${hue},100%,${((i % 3) + 1) * 25}%)`);
     }
     return colors;
-  }, [dataSet]);
+  }, [rawDataSet]);
 
   return (
     <Grid item container xs={12} ref={parent}>

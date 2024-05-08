@@ -52,8 +52,8 @@ const metaheuristiques = {
     "Hill Climbing": HillClimbing,
 }
 
-self.addEventListener("init", ({ detail: { dataSet: rawDataset, metaheuristique, config, speed } }) => {
-    dataSet = new DataSet(rawDataset)
+self.addEventListener("init", ({ detail: { rawDataSet, metaheuristique, config, speed } }) => {
+    dataSet = new DataSet(rawDataSet)
     algo = new metaheuristiques[metaheuristique](dataSet, config);
     interval = speed.interval;
     iterationCount = speed.iterationCount;
