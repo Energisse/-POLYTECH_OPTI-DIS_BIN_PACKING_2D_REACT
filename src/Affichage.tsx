@@ -6,28 +6,42 @@ import BinSVG from "./BinSVG";
 import ItemSVG from "./ItemSVG";
 import { useAppSelector } from "./hooks";
 
-export default function Affichage() {
+export default function Affichage({ id }: { id: number }) {
   const parent = useRef(null);
   const Viewer = useRef<UncontrolledReactSVGPanZoom>(null);
   const { width } = useParentSize(parent);
-  const speed = useAppSelector((state) => state.metaheuristique.speed);
-  const state = useAppSelector((state) => state.metaheuristique.state);
-  const metaheuristique = useAppSelector((state) => state.metaheuristique.metaheuristique);
-  const dataSet = useAppSelector((state) => state.metaheuristique.dataSet);
-  const binPakings = useAppSelector((state) => state.metaheuristique.binPakings);
+  const speed = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].speed
+  );
+  const state = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].state
+  );
+  const metaheuristique = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].metaheuristique
+  );
+  const dataSet = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].dataSet
+  );
+  const binPakings = useAppSelector(
+    (state) => state.metaheuristique.metaheuristiques[id].binPakings
+  );
 
   useEffect(() => {
     if (state === "running") {
-        //@ts-ignore
-        Viewer.current?.fitToViewer("center", "center");
-        setTimeout(() => {
+      //@ts-ignore
+      Viewer.current?.fitToViewer("center", "center");
+      setTimeout(() => {
         //@ts-ignore
         Viewer.current?.fitToViewer("center", "center");
       }, speed.interval);
-    } 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state,metaheuristique,dataSet]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, metaheuristique, dataSet]);
 
+  useEffect(() => {
+      //@ts-ignore
+      Viewer.current?.fitToViewer("center", "center");
+  },[id])
 
   const colors = useMemo(() => {
     const colors: string[] = [];
@@ -52,20 +66,20 @@ export default function Affichage() {
             {binPakings.binPacking.map(({ bins, items }, i) => (
               <>
                 {items.map((item) => (
-                    <ItemSVG
-                      {...item}
-                      color={colors[item.id - 1]}
-                      transitionDuration={speed.interval / 1000 / 2}
-                      key={item.id}
-                    />
-                  ))}
+                  <ItemSVG
+                    {...item}
+                    color={colors[item.id - 1]}
+                    transitionDuration={speed.interval / 1000 / 2}
+                    key={item.id}
+                  />
+                ))}
                 {bins.map((bin, i) => (
-                    <BinSVG
-                      {...bin}
-                      transitionDuration={speed.interval / 1000 / 2}
-                      key={bin.id}
-                    />
-                  ))}
+                  <BinSVG
+                    {...bin}
+                    transitionDuration={speed.interval / 1000 / 2}
+                    key={bin.id}
+                  />
+                ))}
               </>
             ))}
           </svg>
