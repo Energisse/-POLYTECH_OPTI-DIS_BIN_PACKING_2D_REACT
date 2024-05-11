@@ -1,5 +1,5 @@
 import { Grid, Paper } from "@mui/material";
-import Menu from "../Menu";
+import Menu from "./Menu";
 import Affichage from "./Affichage";
 import DatasetProperty from "./DatasetProperty";
 import Statistic from "./Statistic";

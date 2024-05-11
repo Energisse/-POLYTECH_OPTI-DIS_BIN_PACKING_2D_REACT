@@ -46,7 +46,7 @@ export interface MetaheuristiqueState {
         interval: number,
         iterationCount: number
     },
-    state: "idle" | "running" | "paused",
+    state: "idle" | "running" | "paused" | "fnished" | "convergence",
     config?: TabouConfig | GenetiqueConfig | RecuitSimuleConfig | HillClimbingConfig,
     statistic: MetaheuristiqueStatistic[],
     binPakings: BinPackingSvgs
@@ -92,10 +92,9 @@ const methaeuristiqueSlice = createSlice({
 
         setState(state, { payload: { id, state: _state } }: PayloadAction<{
             id: number,
-            state: "idle" | "running" | "paused"
+            state: "idle" | "running" | "paused" | "fnished" | "convergence" | "step"
         }>) {
-            const entity = booksAdapter.getSelectors().selectById(state, id.toString())
-            if (entity.state === "idle" && _state === "running") {
+            if (state.entities[id].state === "fnished") {
                 booksAdapter.updateOne(state, {
                     id: id.toString(),
                     changes: {
@@ -103,7 +102,6 @@ const methaeuristiqueSlice = createSlice({
                     }
                 })
             }
-
             switch (_state) {
                 case "running":
                     workers[id].emit("start")
@@ -113,6 +111,13 @@ const methaeuristiqueSlice = createSlice({
                     break
                 case "idle":
                     workers[id].emit("stop")
+                    break
+                case "convergence":
+                    workers[id].emit("convergence")
+                    break
+                case "step":
+                    workers[id].emit("step")
+                    _state = "idle"
                     break
             }
             booksAdapter.updateOne(state, {
@@ -205,7 +210,7 @@ const methaeuristiqueSlice = createSlice({
         },
         setCurrentId(state, { payload: id }: PayloadAction<number>) {
             state.currentId = id
-        }
+        },
     },
 })
 
@@ -255,7 +260,7 @@ function createWorker(id: number) {
         worker.addEventListener("done", () => {
             store.dispatch(methaeuristiqueSlice.actions.setState({
                 id,
-                state: "idle"
+                state: "fnished"
             }))
             worker.terminate()
             createWorker(id)
@@ -269,7 +274,7 @@ export const {
     setState,
     createSolition,
     removeSolition,
-    setCurrentId
+    setCurrentId,
 } = methaeuristiqueSlice.actions
 export default methaeuristiqueSlice.reducer
 

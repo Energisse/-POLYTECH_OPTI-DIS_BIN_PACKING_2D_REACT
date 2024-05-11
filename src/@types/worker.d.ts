@@ -15,6 +15,8 @@ export interface MainToWorkerEventMap {
         }
     }>;
     "start": CustomEvent<void>;
+    "step": CustomEvent<void>;
+    "convergence": CustomEvent<void>;
     "pause": CustomEvent<void>;
     "stop": CustomEvent<void>;
     "speed": CustomEvent<{

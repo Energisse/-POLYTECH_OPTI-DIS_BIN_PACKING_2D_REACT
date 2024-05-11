@@ -90,6 +90,36 @@ self.addEventListener("stop", () => {
     self.close();
 });
 
+self.addEventListener("step", () => {
+    if (!dataSet || !algo) throw new Error('dataSet or metaheuristique is not initialized');
+    if (timeout) {
+        clearTimeout(timeout);
+    }
+    const result = runOnce(dataSet, algo)
+    if (!result) return;
+    self.emit("stats", [result.stats]);
+    self.emit("solution", [result.solution])
+});
+
+self.addEventListener("convergence", () => {
+    if (!dataSet || !algo) throw new Error('dataSet or metaheuristique is not initialized');
+    if (timeout) {
+        clearTimeout(timeout);
+    }
+    const stats: MetaheuristiqueStatistic[] = [];
+    const solutions: BinPackingSvgs[] = [];
+    while (true) {
+        const result = runOnce(dataSet, algo)
+        if (!result) break;
+        stats.push(result.stats);
+        solutions.push(result.solution);
+    }
+    self.emit("stats", stats);
+    self.emit("solution", solutions)
+    self.emit("done");
+    self.close();
+});
+
 self.addEventListener("speed", ({ detail }) => {
     interval = detail.interval;
     iterationCount = detail.iterationCount;
@@ -100,47 +130,13 @@ function run(dataSet: DataSet, metaheuristique: Metaheuristique) {
     const solutions: BinPackingSvgs[] = [];
     let isFinnished = false;
     for (let i = 0; i < iterationCount; i++) {
-        const { value, done } = metaheuristique.run();
-        if (done) {
+        const result = runOnce(dataSet, metaheuristique)
+        if (!result) {
             isFinnished = true;
             break;
         }
-        const { solution, iteration } = value;
-        const currentSolutions = solution.map((solution, y) => {
-            const binPaking: MetaheuristiqueState["binPakings"]["binPacking"][0] = {
-                bins: [],
-                items: [],
-            };
-
-
-            solution.bins.forEach((bin, i) => {
-                let result = draw(
-                    bin,
-                    i * (dataSet.binWidth) * 1.1,
-                    y * (dataSet.binWidth) * 1.1,
-                    i.toString()
-                );
-                binPaking.bins.push(...result.bins);
-                binPaking.items.push(...result.items);
-            });
-            return {
-                bins: binPaking.bins.sort((a, b) => parseInt(a.id) - parseInt(b.id)),
-                items: binPaking.items.sort((a, b) => a.id - b.id)
-            };
-        });
-
-        solutions.push({
-            binPacking: currentSolutions,
-            width: currentSolutions.reduce((acc, { bins }) => Math.max(bins.reduce((acc, bin) => Math.max(acc, bin.x + bin.width), 0), acc), 0),
-            height: (currentSolutions.length - 1) * dataSet.binHeight * 1.1 + dataSet.binHeight
-        })
-
-
-        stats.push({
-            fitness: solution[0].fitness,
-            iteration,
-            numberOfBin: solution[0].bins.length
-        });
+        stats.push(result.stats);
+        solutions.push(result.solution);
     }
     if (solutions.length && stats.length) {
         self.emit("stats", stats);
@@ -156,6 +152,49 @@ function run(dataSet: DataSet, metaheuristique: Metaheuristique) {
         self.close();
     }
 }
+
+
+function runOnce(dataSet: DataSet, metaheuristique: Metaheuristique) {
+    const { value, done } = metaheuristique.run();
+    if (done) return;
+    const { solution, iteration } = value;
+    const currentSolutions = solution.map((solution, y) => {
+        const binPaking: MetaheuristiqueState["binPakings"]["binPacking"][0] = {
+            bins: [],
+            items: [],
+        };
+
+
+        solution.bins.forEach((bin, i) => {
+            let result = draw(
+                bin,
+                i * (dataSet.binWidth) * 1.1,
+                y * (dataSet.binWidth) * 1.1,
+                i.toString()
+            );
+            binPaking.bins.push(...result.bins);
+            binPaking.items.push(...result.items);
+        });
+        return {
+            bins: binPaking.bins.sort((a, b) => parseInt(a.id) - parseInt(b.id)),
+            items: binPaking.items.sort((a, b) => a.id - b.id)
+        };
+    });
+
+    return {
+        solution: {
+            binPacking: currentSolutions,
+            width: currentSolutions.reduce((acc, { bins }) => Math.max(bins.reduce((acc, bin) => Math.max(acc, bin.x + bin.width), 0), acc), 0),
+            height: (currentSolutions.length - 1) * dataSet.binHeight * 1.1 + dataSet.binHeight
+        },
+        stats: {
+            fitness: solution[0].fitness,
+            iteration,
+            numberOfBin: solution[0].bins.length
+        }
+    }
+}
+
 
 function draw(bin: Bin, d: number, y: number, id: string) {
     const binPaking: MetaheuristiqueState["binPakings"]["binPacking"][0] = {

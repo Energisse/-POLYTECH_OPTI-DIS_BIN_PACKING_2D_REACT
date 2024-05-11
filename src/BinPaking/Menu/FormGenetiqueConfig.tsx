@@ -1,20 +1,21 @@
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { TabouConfig } from "polytech_opti-dis_bin_packing_2d/dist/src/metaheuristique/tabou";
 import { Button, TextField } from "@mui/material";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { editConfig } from "../reducers/metaheuristique";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { editConfig } from "../../reducers/metaheuristique";
+import { GenetiqueConfig } from "polytech_opti-dis_bin_packing_2d";
 import { useEffect } from "react";
 import isEqual from "lodash.isequal";
 
-export default function FormTabouConfig({ id }: { id: number }) {
+export default function FormGenetiqueConfig({ id }: { id: number }) {
   const config = useAppSelector(
     (state) => state.metaheuristique.entities[id].config
   );
 
-  const { handleSubmit, control, reset, watch } = useForm<TabouConfig>({
+  const { handleSubmit, control, reset, watch } = useForm<GenetiqueConfig>({
     defaultValues: config || {
       iteration: 0,
-      tabouSize: 0,
+      populationSize: 0,
     },
   });
 
@@ -54,13 +55,13 @@ export default function FormTabouConfig({ id }: { id: number }) {
         )}
       />
       <Controller
-        name="tabouSize"
+        name="populationSize"
         control={control}
         rules={{ required: false, min: 0 }}
         render={({ field }) => (
           <TextField
             {...field}
-            label="tabouSize"
+            label="taille de la population"
             type="number"
             InputProps={{
               inputProps: {

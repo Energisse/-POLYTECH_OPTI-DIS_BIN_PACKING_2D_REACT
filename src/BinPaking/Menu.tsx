@@ -1,23 +1,31 @@
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
-import { Button, Grid, Slider, Typography } from "@mui/material";
+import AirlineStopsIcon from "@mui/icons-material/AirlineStops";
+import LoopIcon from "@mui/icons-material/Loop";
+
+import {
+  Button,
+  CircularProgress,
+  Grid,
+  Slider,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../hooks";
+import { setSpeed, setState } from "../reducers/metaheuristique";
 import FormGenetiqueConfig from "./Menu/FormGenetiqueConfig";
 import FormHillClimbingConfig from "./Menu/FormHillClimbingConfig";
 import FormRecuitSimuleConfig from "./Menu/FormRecuitSimuleConfig";
 import FormTabouConfig from "./Menu/FormTabouConfig";
-import { useAppDispatch, useAppSelector } from "./hooks";
-import { setSpeed, setState } from "./reducers/metaheuristique";
 
 export default function Menu({ id }: { id: number }) {
   const dispatch = useAppDispatch();
   const speed = useAppSelector(
     (state) => state.metaheuristique.entities[id].speed
   );
-  const rawDataSet = useAppSelector(
-    (state) => state.metaheuristique.entities[id].rawDataSet
-  );
+
   const state = useAppSelector(
     (state) => state.metaheuristique.entities[id].state
   );
@@ -59,45 +67,70 @@ export default function Menu({ id }: { id: number }) {
     }
   }, [id, metaheuristique]);
 
+  if (state === "convergence")
+    return (
+      <Grid container justifyContent={"center"} className="App" p={1}>
+        <CircularProgress />
+      </Grid>
+    );
+
   return (
     <Grid container justifyContent={"center"} className="App" p={1}>
       <Grid item p={1}>
-        {state === "idle" && (
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={!rawDataSet}
-            onClick={() => dispatch(setState({ id: id, state: "running" }))}
-          >
-            <PlayArrowIcon />
-          </Button>
+        {state !== "running" && (
+          <Tooltip title="Lancer la simulation">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => dispatch(setState({ id: id, state: "running" }))}
+            >
+              <PlayArrowIcon />
+            </Button>
+          </Tooltip>
         )}
         {state === "running" && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => dispatch(setState({ id: id, state: "paused" }))}
-          >
-            <PauseIcon />
-          </Button>
-        )}
-        {state === "paused" && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => dispatch(setState({ id: id, state: "running" }))}
-          >
-            <PlayArrowIcon />
-          </Button>
+          <Tooltip title="Mettre en pause">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => dispatch(setState({ id: id, state: "paused" }))}
+            >
+              <PauseIcon />
+            </Button>
+          </Tooltip>
         )}
         {(state === "running" || state === "paused") && (
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => dispatch(setState({ id: id, state: "idle" }))}
-          >
-            <StopIcon />
-          </Button>
+          <Tooltip title="Arrêter la simulation">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => dispatch(setState({ id: id, state: "idle" }))}
+            >
+              <StopIcon />
+            </Button>
+          </Tooltip>
+        )}
+        {state !== "running" && (
+          <Tooltip title="Lancer une itération">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => dispatch(setState({ id, state: "step" }))}
+            >
+              <AirlineStopsIcon />
+            </Button>
+          </Tooltip>
+        )}
+        {state !== "running" && (
+          <Tooltip title="Lancer jusqu'a convergence">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => dispatch(setState({ id, state: "convergence" }))}
+            >
+              <LoopIcon />
+            </Button>
+          </Tooltip>
         )}
       </Grid>
       <Grid item xs={12}>

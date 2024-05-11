@@ -3,8 +3,8 @@ import { RecuitSimuleConfig } from "polytech_opti-dis_bin_packing_2d";
 import { TabouConfig } from "polytech_opti-dis_bin_packing_2d/dist/src/metaheuristique/tabou";
 import { useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { editConfig } from "../reducers/metaheuristique";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { editConfig } from "../../reducers/metaheuristique";
 import isEqual from "lodash.isequal";
 
 export default function FormRecuitSimuleConfig({ id }: { id: number }) {
