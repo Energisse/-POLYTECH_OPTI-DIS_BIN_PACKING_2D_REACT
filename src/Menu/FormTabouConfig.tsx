@@ -8,7 +8,7 @@ import isEqual from "lodash.isequal";
 
 export default function FormTabouConfig({ id }: { id: number }) {
   const config = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].config
+    (state) => state.metaheuristique.entities[id].config
   );
 
   const { handleSubmit, control, reset, watch } = useForm<TabouConfig>({

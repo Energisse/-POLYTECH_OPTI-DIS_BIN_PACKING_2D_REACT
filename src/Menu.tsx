@@ -13,16 +13,16 @@ import { setSpeed, setState } from "./reducers/metaheuristique";
 export default function Menu({ id }: { id: number }) {
   const dispatch = useAppDispatch();
   const speed = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].speed
+    (state) => state.metaheuristique.entities[id].speed
   );
   const rawDataSet = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].rawDataSet
+    (state) => state.metaheuristique.entities[id].rawDataSet
   );
   const state = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].state
+    (state) => state.metaheuristique.entities[id].state
   );
   const metaheuristique = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].metaheuristique
+    (state) => state.metaheuristique.entities[id].metaheuristique
   );
   const [selectedSpeed, setSelectedSpeed] = useState(speed);
 
@@ -62,7 +62,7 @@ export default function Menu({ id }: { id: number }) {
   return (
     <Grid container justifyContent={"center"} className="App" p={1}>
       <Grid item p={1}>
-        {(state === "idle" || state === "finished") && (
+        {state === "idle" && (
           <Button
             variant="contained"
             color="primary"
@@ -76,7 +76,7 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => dispatch(setState({ id: id, state: "idle" }))}
+            onClick={() => dispatch(setState({ id: id, state: "paused" }))}
           >
             <PauseIcon />
           </Button>
@@ -94,7 +94,7 @@ export default function Menu({ id }: { id: number }) {
           <Button
             variant="contained"
             color="error"
-            onClick={() => dispatch(setState({ id: id, state: "finished" }))}
+            onClick={() => dispatch(setState({ id: id, state: "idle" }))}
           >
             <StopIcon />
           </Button>

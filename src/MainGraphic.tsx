@@ -16,21 +16,19 @@ import { selectAllStatistic } from "./reducers/metaheuristique";
 
 function MainGraphic() {
   const statistic = useAppSelector(selectAllStatistic);
-  const metaheuristiques = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques
-  );
+  const { entities, ids } = useAppSelector((state) => state.metaheuristique);
 
   const theme = useTheme();
 
   const colors = useMemo(() => {
-    const colors: string[] = [];
+    const colors: Record<string, string> = {};
     if (!statistic) return colors;
-    for (let i = 1; i <= metaheuristiques.length; i++) {
-      const hue = (i / metaheuristiques.length) * 300; //red is 0 and 360, green is 120, blue is 240, purple is 300
-      colors.push(`hsl(${hue},100%,50%)`);
+    for (let i = 1; i <= ids.length; i++) {
+      const hue = (i / ids.length) * 300; //red is 0 and 360, green is 120, blue is 240, purple is 300
+      colors[ids[i]] = `hsl(${hue},100%,50%)`;
     }
     return colors;
-  }, [statistic, metaheuristiques.length]);
+  }, [statistic, ids]);
 
   return (
     <Grid container justifyContent={"center"} alignItems={"center"}>
@@ -64,18 +62,16 @@ function MainGraphic() {
                   background: theme.palette.background.default,
                 }}
               />
-              {Array(metaheuristiques.length)
-                .fill(0)
-                .map((_, i) => (
-                  <Line
-                    yAxisId="numberOfBin"
-                    name={metaheuristiques[i].metaheuristique}
-                    type="monotone"
-                    dataKey={`solutions[${i}].numberOfBin`}
-                    stroke={colors[i]}
-                    isAnimationActive={false}
-                  />
-                ))}
+              {Object.values(entities).map(({ metaheuristique, id }) => (
+                <Line
+                  yAxisId="numberOfBin"
+                  name={metaheuristique}
+                  type="monotone"
+                  dataKey={`solutions[${id}].numberOfBin`}
+                  stroke={colors[id]}
+                  isAnimationActive={false}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </Paper>
@@ -116,18 +112,16 @@ function MainGraphic() {
                   background: theme.palette.background.default,
                 }}
               />
-              {Array(metaheuristiques.length)
-                .fill(0)
-                .map((_, i) => (
-                  <Line
-                    yAxisId="fitness"
-                    type="monotone"
-                    name={metaheuristiques[i].metaheuristique}
-                    dataKey={`solutions[${i}].fitness`}
-                    stroke={colors[i]}
-                    isAnimationActive={false}
-                  />
-                ))}
+              {Object.values(entities).map(({ metaheuristique, id }) => (
+                <Line
+                  yAxisId="fitness"
+                  type="monotone"
+                  name={metaheuristique}
+                  dataKey={`solutions[${id}].fitness`}
+                  stroke={colors[id]}
+                  isAnimationActive={false}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </Paper>

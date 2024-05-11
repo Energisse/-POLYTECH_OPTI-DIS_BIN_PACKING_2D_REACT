@@ -6,16 +6,14 @@ import ButtonPercent from "./ButtonPercent";
 import Header from "./Header";
 import MainGraphic from "./MainGraphic";
 import Modal from "./Modal";
-import Solution from "./Solution";
+import Solution from "./BinPaking/Solution";
 import { useAppDispatch, useAppSelector } from "./hooks";
-import { setCurrent } from "./reducers/metaheuristique";
+import { setCurrentId } from "./reducers/metaheuristique";
 
 function App() {
   const darkMode = useAppSelector((state) => state.rootReducer.darkMode);
-  const solutions = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques.length
-  );
-  const current = useAppSelector((state) => state.metaheuristique.current);
+  const ids = useAppSelector((state) => state.metaheuristique.ids);
+  const current = useAppSelector((state) => state.metaheuristique.currentId);
 
   const dispatch = useAppDispatch();
 
@@ -36,7 +34,7 @@ function App() {
   }
 
   function handleMainMenu() {
-    dispatch(setCurrent({ id: -1 }));
+    dispatch(setCurrentId(-1));
   }
 
   return (
@@ -86,13 +84,11 @@ function App() {
                       Menu
                     </Button>
                   </Grid>
-                  {Array(solutions)
-                    .fill(0)
-                    .map((_, i) => (
-                      <Grid item xs={12}>
-                        <ButtonPercent id={i} key={i} />
-                      </Grid>
-                    ))}
+                  {ids.map((i) => (
+                    <Grid item xs={12}>
+                      <ButtonPercent id={+i} key={i} />
+                    </Grid>
+                  ))}
                 </Paper>
               </Grid>
               <Grid item flex={1}>

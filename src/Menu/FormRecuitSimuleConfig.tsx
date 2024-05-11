@@ -9,7 +9,7 @@ import isEqual from "lodash.isequal";
 
 export default function FormRecuitSimuleConfig({ id }: { id: number }) {
   const config = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].config
+    (state) => state.metaheuristique.entities[id].config
   );
 
   const { handleSubmit, control, reset, watch } = useForm<RecuitSimuleConfig>({

@@ -2,9 +2,9 @@ import { useParentSize } from "@cutting/use-get-parent-size";
 import { Grid } from "@mui/material";
 import { useEffect, useMemo, useRef } from "react";
 import { UncontrolledReactSVGPanZoom } from "react-svg-pan-zoom";
-import BinSVG from "./BinSVG";
-import ItemSVG from "./ItemSVG";
-import { useAppSelector } from "./hooks";
+import BinSVG from "../BinSVG";
+import ItemSVG from "../ItemSVG";
+import { useAppSelector } from "../hooks";
 import { DataSet } from "polytech_opti-dis_bin_packing_2d";
 
 export default function Affichage({ id }: { id: number }) {
@@ -12,16 +12,16 @@ export default function Affichage({ id }: { id: number }) {
   const Viewer = useRef<UncontrolledReactSVGPanZoom>(null);
   const { width } = useParentSize(parent);
   const speed = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].speed
+    (state) => state.metaheuristique.entities[id].speed
   );
   const state = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].state
+    (state) => state.metaheuristique.entities[id].state
   );
   const rawDataSet = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].rawDataSet
+    (state) => state.metaheuristique.entities[id].rawDataSet
   );
   const binPakings = useAppSelector(
-    (state) => state.metaheuristique.metaheuristiques[id].binPakings
+    (state) => state.metaheuristique.entities[id].binPakings
   );
 
   useEffect(() => {
