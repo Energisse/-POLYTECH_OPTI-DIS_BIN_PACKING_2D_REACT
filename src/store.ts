@@ -1,12 +1,26 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
+import metaheuristique, { rehydrateMiddleware } from './reducers/metaheuristique'
 import rootReducer from './reducers/rootReducer'
-import metaheuristique from './reducers/metaheuristique'
+
+const reducers = combineReducers({
+  rootReducer,
+  metaheuristique
+})
 
 const store = configureStore({
-  reducer: {
-    rootReducer,
-    metaheuristique,
-  },
+  reducer: persistReducer<ReturnType<typeof reducers>>({
+    key: 'root',
+    storage,
+    version: 1,
+  }, reducers),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(rehydrateMiddleware),
   devTools: process.env.NODE_ENV === 'development',
 })
 

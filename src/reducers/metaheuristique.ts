@@ -1,4 +1,4 @@
-import type { PayloadAction } from '@reduxjs/toolkit';
+import type { Middleware, PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
 import { GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
 import { RootState } from '../store';
@@ -38,13 +38,11 @@ export type BinPackingSvgs = {
     height: number;
 }
 
-interface MetaheuristiqueState {
+export interface MetaheuristiqueState {
     current: number,
     metaheuristiques: Array<{
         metaheuristique: Metaheuristiques
         rawDataSet?: string,
-        width?: number,
-        height?: number,
         speed: {
             interval: number,
             iterationCount: number
@@ -62,6 +60,18 @@ const initialState = {
 } satisfies MetaheuristiqueState as MetaheuristiqueState
 
 const workers: Worker[] = [];
+
+// Middleware personnalisé pour recréer les workers lors de la rehydration
+export const rehydrateMiddleware: any = (store: RootState) => (next: (action: PayloadAction<RootState>) => any) => (action: PayloadAction<RootState>) => {
+    if (action.type === 'persist/REHYDRATE') {
+        console.log(action)
+        action.payload.metaheuristique.metaheuristiques.forEach((_, id) => {
+            createWorker(id)
+        })
+    }
+
+    return next(action);
+};
 
 
 const methaeuristiqueSlice = createSlice({
@@ -91,7 +101,7 @@ const methaeuristiqueSlice = createSlice({
                 case "paused":
                     workers[id].emit("pause")
                     break
-                case "idle":
+                case "finished":
                     workers[id].emit("stop")
                     break
             }
@@ -168,6 +178,7 @@ const methaeuristiqueSlice = createSlice({
             workers.splice(id, 1)
         }
     }
+    ,
 })
 
 function createWorker(id: number) {
