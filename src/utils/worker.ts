@@ -41,6 +41,8 @@ let timeout: NodeJS.Timeout | null = null;
 let interval = 100
 let iterationCount = 1
 
+let totalTime = 0;
+
 DedicatedWorkerGlobalScope.prototype.emit = function (...data) {
     this.postMessage({ type: data[0], data: data[1] });
 }
@@ -155,7 +157,12 @@ function run(dataSet: DataSet, metaheuristique: Metaheuristique) {
 
 
 function runOnce(dataSet: DataSet, metaheuristique: Metaheuristique) {
+    const start = self.performance.now();
     const { value, done } = metaheuristique.run();
+    const end = self.performance.now();
+    const time = end - start;
+    console.log(time);
+    totalTime += time;
     if (done) return;
     const { solution, iteration } = value;
     const currentSolutions = solution.map((solution, y) => {
@@ -190,7 +197,8 @@ function runOnce(dataSet: DataSet, metaheuristique: Metaheuristique) {
         stats: {
             fitness: solution[0].fitness,
             iteration,
-            numberOfBin: solution[0].bins.length
+            numberOfBin: solution[0].bins.length,
+            time: totalTime
         }
     }
 }

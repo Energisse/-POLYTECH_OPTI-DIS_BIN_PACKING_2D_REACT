@@ -80,7 +80,7 @@ export default function Statistic({ id }: { id: number }) {
                 <Label value="Iteration" position="bottom" />
               </XAxis>
               <YAxis yAxisId="numberOfBin" type="number">
-                <Label value="Number of bin" position="center" angle={-90} />
+                <Label value="Nombre de bin" position="center" angle={-90} />
               </YAxis>
               <Tooltip
                 contentStyle={{
@@ -91,6 +91,44 @@ export default function Statistic({ id }: { id: number }) {
                 yAxisId="numberOfBin"
                 type="monotone"
                 dataKey="numberOfBin"
+                stroke="#585"
+                strokeWidth={5}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Paper>
+      </Grid>
+      <Grid item xs={12}>
+        <Paper>
+          <ResponsiveContainer height={250} width="100%">
+            <LineChart
+              data={fitness}
+              syncId="anyId"
+              margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
+            >
+              <CartesianGrid strokeDasharray="5 5 " />
+              <XAxis
+                dataKey="iteration"
+                scale={"linear"}
+                type="number"
+                domain={["auto", "auto"]}
+              >
+                <Label value="Iteration" position="bottom" />
+              </XAxis>
+              <YAxis yAxisId="Time" type="number">
+                <Label value="Temps" position="center" angle={-90} />
+              </YAxis>
+              <Tooltip
+                contentStyle={{
+                  background: theme.palette.background.default,
+                }}
+                formatter={(value) => value + " ms"}
+              />
+              <Line
+                yAxisId="Time"
+                type="monotone"
+                dataKey="time"
                 stroke="#585"
                 strokeWidth={5}
                 isAnimationActive={false}

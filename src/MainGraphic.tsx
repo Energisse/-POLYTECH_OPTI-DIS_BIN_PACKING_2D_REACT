@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import {
   CartesianGrid,
   Label,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -31,7 +32,7 @@ function MainGraphic() {
   }, [statistic, ids]);
 
   return (
-    <Grid container justifyContent={"center"} alignItems={"center"}>
+    <Grid container justifyContent={"center"} alignItems={"center"} spacing={2}>
       <Grid item xs={12}>
         <Paper elevation={2} sx={{ height: "100%" }}>
           <ResponsiveContainer height={250} width="100%">
@@ -39,12 +40,18 @@ function MainGraphic() {
               data={statistic}
               syncId="anyId"
               margin={{
-                top: 25,
+                top: 10,
                 right: 25,
                 left: 25,
                 bottom: 25,
               }}
             >
+              <Legend
+                verticalAlign="top"
+                wrapperStyle={{
+                  paddingBottom: "10px",
+                }}
+              />
               <CartesianGrid strokeDasharray="5 5 " />
               <XAxis
                 dataKey="iteration"
@@ -55,7 +62,7 @@ function MainGraphic() {
                 <Label value="Iteration" position="bottom" />
               </XAxis>
               <YAxis yAxisId="numberOfBin" type="number">
-                <Label value="Number of bin" position="center" angle={-90} />
+                <Label value="Nombre de bin" position="center" angle={-90} />
               </YAxis>
               <Tooltip
                 contentStyle={{
@@ -83,7 +90,7 @@ function MainGraphic() {
               data={statistic}
               syncId="anyId"
               margin={{
-                top: 25,
+                top: 10,
                 right: 25,
                 left: 25,
                 bottom: 25,
@@ -112,12 +119,76 @@ function MainGraphic() {
                   background: theme.palette.background.default,
                 }}
               />
+              <Legend
+                verticalAlign="top"
+                wrapperStyle={{
+                  paddingBottom: "10px",
+                }}
+              />
               {Object.values(entities).map(({ metaheuristique, id }) => (
                 <Line
                   yAxisId="fitness"
                   type="monotone"
                   name={metaheuristique}
                   dataKey={`solutions[${id}].fitness`}
+                  stroke={colors[id]}
+                  isAnimationActive={false}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </Paper>
+      </Grid>
+      <Grid item xs={12}>
+        <Paper elevation={2} sx={{ height: "100%" }}>
+          <ResponsiveContainer height={250} width="100%">
+            <LineChart
+              data={statistic}
+              syncId="anyId"
+              margin={{
+                top: 10,
+                right: 25,
+                left: 25,
+                bottom: 25,
+              }}
+              height={100}
+            >
+              <CartesianGrid strokeDasharray="5 5 " />
+              <XAxis
+                dataKey="iteration"
+                scale={"linear"}
+                type="number"
+                domain={["auto", "auto"]}
+              >
+                <Label value="Iteration" position="bottom" />
+              </XAxis>
+              <YAxis
+                yAxisId="time"
+                type="number"
+                tickFormatter={(value) =>
+                  Number(value.toFixed(10)).toExponential()
+                }
+              >
+                <Label value="Temps(ms)" position="center" angle={-90} />
+              </YAxis>
+              <Tooltip
+                contentStyle={{
+                  background: theme.palette.background.default,
+                }}
+                formatter={(value) => value + " ms"}
+              />
+              <Legend
+                verticalAlign="top"
+                wrapperStyle={{
+                  paddingBottom: "10px",
+                }}
+              />
+              {Object.values(entities).map(({ metaheuristique, id }) => (
+                <Line
+                  yAxisId="time"
+                  type="monotone"
+                  name={metaheuristique}
+                  dataKey={`solutions[${id}].time`}
                   stroke={colors[id]}
                   isAnimationActive={false}
                 />

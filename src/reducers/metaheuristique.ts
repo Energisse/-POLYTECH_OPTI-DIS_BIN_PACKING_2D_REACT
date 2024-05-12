@@ -15,6 +15,7 @@ export type MetaheuristiqueStatistic = {
     iteration: number,
     fitness: number,
     numberOfBin: number
+    time: number
 }
 
 export type BinPackingSvgs = {
@@ -60,7 +61,7 @@ export const rehydrateMiddleware: any = (store: RootState) => (next: (action: Pa
             createWorker(+id)
         })
         action.payload.metaheuristique.ids.forEach((id: string) => {
-            action.payload.metaheuristique.entities[id].state = "idle"
+            action.payload.metaheuristique.entities[id].state = "fnished"
         })
     }
 
@@ -131,11 +132,7 @@ const methaeuristiqueSlice = createSlice({
 
         addFitness(state, { payload: { id, stats } }: PayloadAction<{
             id: number,
-            stats: Array<{
-                iteration: number,
-                fitness: number,
-                numberOfBin: number
-            }>
+            stats: Array<MetaheuristiqueStatistic>
         }>) {
             booksAdapter.updateOne(state, {
                 id: id.toString(),
