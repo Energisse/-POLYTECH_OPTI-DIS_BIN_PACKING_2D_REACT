@@ -161,7 +161,6 @@ function runOnce(dataSet: DataSet, metaheuristique: Metaheuristique) {
     const { value, done } = metaheuristique.run();
     const end = self.performance.now();
     const time = end - start;
-    console.log(time);
     totalTime += time;
     if (done) return;
     const { solution, iteration } = value;

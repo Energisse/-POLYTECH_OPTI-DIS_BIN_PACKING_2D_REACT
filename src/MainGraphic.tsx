@@ -1,5 +1,5 @@
-import { Grid, Paper, useTheme } from "@mui/material";
-import { useMemo } from "react";
+import { Grid, Paper, Tab, Tabs, useTheme } from "@mui/material";
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   Label,
@@ -13,11 +13,22 @@ import {
 } from "recharts";
 import "./App.css";
 import { useAppSelector } from "./hooks";
-import { selectAllStatistic } from "./reducers/metaheuristique";
+import { selectAllStatisticByFile } from "./reducers/metaheuristique";
 
 function MainGraphic() {
-  const statistic = useAppSelector(selectAllStatistic);
   const { entities, ids } = useAppSelector((state) => state.metaheuristique);
+
+  const files = useMemo(() => {
+    return Object.keys(Object.groupBy(Object.values(entities), (v) => v.name));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entities.length]);
+
+  const [value, setValue] = useState<number>(0);
+
+  const statistic = useAppSelector(selectAllStatisticByFile(files[value]));
+
+  // const selected = useMemo(() => {})
 
   const theme = useTheme();
 
@@ -33,6 +44,17 @@ function MainGraphic() {
 
   return (
     <Grid container justifyContent={"center"} alignItems={"center"} spacing={2}>
+      <Grid item xs={12}>
+        <Tabs
+          value={value}
+          onChange={(event, newValue) => setValue(newValue)}
+          aria-label="basic tabs example"
+        >
+          {files.map((file, index) => (
+            <Tab key={index} label={file} />
+          ))}
+        </Tabs>
+      </Grid>
       <Grid item xs={12}>
         <Paper elevation={2} sx={{ height: "100%" }}>
           <ResponsiveContainer height={250} width="100%">

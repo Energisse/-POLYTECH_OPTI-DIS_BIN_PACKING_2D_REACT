@@ -23,9 +23,7 @@ export default function ButtonPercent({ id }: { id: number }) {
 
   return (
     <>
-      <Button key={id} onClick={() => handleClick(id)}>
-        {metaheuristique}
-      </Button>
+      <Button onClick={() => handleClick(id)}>{metaheuristique}</Button>
       <IconButton onClick={() => handleRemove(id)}>
         <CloseIcon />
       </IconButton>

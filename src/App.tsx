@@ -1,19 +1,26 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper, ThemeProvider, createTheme } from "@mui/material";
-import { useState } from "react";
+import {
+  Button,
+  Divider,
+  Grid,
+  Paper,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 import "./App.css";
+import Solution from "./BinPaking/Solution";
 import ButtonPercent from "./ButtonPercent";
 import Header from "./Header";
 import MainGraphic from "./MainGraphic";
 import Modal from "./Modal";
-import Solution from "./BinPaking/Solution";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import { setCurrentId } from "./reducers/metaheuristique";
 
 function App() {
   const darkMode = useAppSelector((state) => state.rootReducer.darkMode);
-  const ids = useAppSelector((state) => state.metaheuristique.ids);
   const current = useAppSelector((state) => state.metaheuristique.currentId);
+  const metas = useAppSelector((state) => state.metaheuristique.entities);
 
   const dispatch = useAppDispatch();
 
@@ -36,6 +43,21 @@ function App() {
   function handleMainMenu() {
     dispatch(setCurrentId(-1));
   }
+
+  const buttons = useMemo(() => {
+    return Object.entries(
+      Object.groupBy(Object.values(metas), (v) => v.name)
+    ).map(([name, meta]) => (
+      <>
+        <Divider key={name}>{name}</Divider>
+        {meta!.map((m) => (
+          <Grid item xs={12}>
+            <ButtonPercent id={+m.id} key={m.id} />
+          </Grid>
+        ))}
+      </>
+    ));
+  }, [metas]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -84,11 +106,7 @@ function App() {
                       Menu
                     </Button>
                   </Grid>
-                  {ids.map((i) => (
-                    <Grid item xs={12}>
-                      <ButtonPercent id={+i} key={i} />
-                    </Grid>
-                  ))}
+                  {buttons}
                 </Paper>
               </Grid>
               <Grid item flex={1}>

@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createEntityAdapter, createSelector, createSlice } from '@reduxjs/toolkit';
-import { GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
+import { DataSet, GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
 import { RootState } from '../store';
 
 Worker.prototype.emit = function (...data) {
@@ -17,7 +17,6 @@ export type MetaheuristiqueStatistic = {
     numberOfBin: number
     time: number
 }
-
 export type BinPackingSvgs = {
     binPacking: Array<{
         bins: Array<{
@@ -38,11 +37,11 @@ export type BinPackingSvgs = {
     width: number;
     height: number;
 }
-
 export interface MetaheuristiqueState {
     id: string;
     metaheuristique: Metaheuristiques
-    rawDataSet?: string,
+    rawDataSet: string,
+    name: string,
     speed: {
         interval: number,
         iterationCount: number
@@ -52,11 +51,11 @@ export interface MetaheuristiqueState {
     statistic: MetaheuristiqueStatistic[],
     binPakings: BinPackingSvgs
 }
+
 const workers: Record<number, Worker> = {}
 
 export const rehydrateMiddleware: any = (store: RootState) => (next: (action: PayloadAction<RootState>) => any) => (action: PayloadAction<RootState>) => {
     if (action.type === 'persist/REHYDRATE' && action.payload) {
-        console.log("Rehydrating")
         action.payload.metaheuristique.ids.forEach((id: string) => {
             createWorker(+id)
         })
@@ -64,25 +63,32 @@ export const rehydrateMiddleware: any = (store: RootState) => (next: (action: Pa
             action.payload.metaheuristique.entities[id].state = "fnished"
         })
     }
-
     return next(action);
 };
 
-const booksAdapter = createEntityAdapter<MetaheuristiqueState>({})
+const metaheuristiqueAdapter = createEntityAdapter<MetaheuristiqueState>({})
+
+type MetaheuristiqueSlice = {
+    currentId: number;
+    files: Record<string, string>;
+} & ReturnType<typeof metaheuristiqueAdapter['getInitialState']>;
+
+const initialState = {
+    ...metaheuristiqueAdapter.getInitialState(),
+    currentId: -1,
+    files: {}
+} satisfies MetaheuristiqueSlice as MetaheuristiqueSlice
 
 const methaeuristiqueSlice = createSlice({
     name: 'rootReducer',
-    initialState: {
-        ...booksAdapter.getInitialState(),
-        currentId: -1
-    },
+    initialState,
     reducers: {
         setSpeed(state, { payload: { id, ...speed } }: PayloadAction<{
             id: number,
             interval: number,
             iterationCount: number
         }>) {
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     speed
@@ -96,7 +102,7 @@ const methaeuristiqueSlice = createSlice({
             state: "idle" | "running" | "paused" | "fnished" | "convergence" | "step"
         }>) {
             if (state.entities[id].state === "fnished") {
-                booksAdapter.updateOne(state, {
+                metaheuristiqueAdapter.updateOne(state, {
                     id: id.toString(),
                     changes: {
                         statistic: [],
@@ -121,20 +127,18 @@ const methaeuristiqueSlice = createSlice({
                     _state = "idle"
                     break
             }
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     state: _state
                 }
             })
-
         },
-
         addFitness(state, { payload: { id, stats } }: PayloadAction<{
             id: number,
             stats: Array<MetaheuristiqueStatistic>
         }>) {
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     statistic: state.entities[id].statistic.concat(stats)
@@ -145,7 +149,7 @@ const methaeuristiqueSlice = createSlice({
             id: number,
             config: MetaheuristiqueConfigs
         }>) {
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     config
@@ -156,7 +160,7 @@ const methaeuristiqueSlice = createSlice({
             id: number,
             config: MetaheuristiqueConfigs
         }>) {
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     config
@@ -168,7 +172,7 @@ const methaeuristiqueSlice = createSlice({
             id: number,
             items: BinPackingSvgs[]
         }>) {
-            booksAdapter.updateOne(state, {
+            metaheuristiqueAdapter.updateOne(state, {
                 id: id.toString(),
                 changes: {
                     binPakings: items.at(-1)!
@@ -179,8 +183,9 @@ const methaeuristiqueSlice = createSlice({
             rawDataSet: string,
             metaheuristique: Metaheuristiques,
         }>) {
-            booksAdapter.addOne(state, {
+            metaheuristiqueAdapter.addOne(state, {
                 id: state.ids.length.toString(),
+                name: new DataSet(rawDataSet).name,
                 metaheuristique,
                 rawDataSet,
                 speed: {
@@ -200,7 +205,7 @@ const methaeuristiqueSlice = createSlice({
             state.currentId = +state.ids.at(-1)!
         },
         removeSolition(state, { payload: id }: PayloadAction<number>) {
-            booksAdapter.removeOne(state, id.toString())
+            metaheuristiqueAdapter.removeOne(state, id.toString())
             workers[id].terminate()
             delete workers[id]
             if (state.currentId === id) state.currentId = -1
@@ -208,6 +213,17 @@ const methaeuristiqueSlice = createSlice({
         setCurrentId(state, { payload: id }: PayloadAction<number>) {
             state.currentId = id
         },
+        addFile(state, { payload: file }: PayloadAction<string>) {
+            const { name } = new DataSet(file)
+            state.files[name] = file
+        },
+        removeFile(state, { payload: file }: PayloadAction<string>) {
+            Object.entries(state.files).forEach(([key, value]) => {
+                if (value === file) {
+                    delete state.files[key]
+                }
+            })
+        }
     },
 })
 
@@ -272,10 +288,12 @@ export const {
     createSolition,
     removeSolition,
     setCurrentId,
+    addFile,
+    removeFile
 } = methaeuristiqueSlice.actions
 export default methaeuristiqueSlice.reducer
 
-export const selectAllStatistic = createSelector(
+export const selectAllStatisticByFile = (filename: string) => createSelector(
     [(state: RootState) => state.metaheuristique.entities],
     (metaheuristiques) => {
         const resultat: {
@@ -285,7 +303,8 @@ export const selectAllStatistic = createSelector(
                 numberOfBin: number
             }>
         }[] = []
-        Object.entries(metaheuristiques).forEach(([id, { statistic }]) => {
+        Object.entries(metaheuristiques).forEach(([id, { statistic, name }]) => {
+            if (name !== filename) return
             statistic.forEach(({ iteration, ...stats }) => {
                 if (!resultat[iteration - 1]) {
                     resultat[iteration - 1] = {
@@ -297,5 +316,4 @@ export const selectAllStatistic = createSelector(
             })
         })
         return resultat
-    }
-);
+    })
