@@ -15,6 +15,7 @@ export default function FormTabouConfig({ id }: { id: number }) {
     defaultValues: config || {
       iteration: 0,
       tabouSize: 0,
+      convergence: 0,
     },
   });
 
@@ -44,6 +45,23 @@ export default function FormTabouConfig({ id }: { id: number }) {
           <TextField
             {...field}
             label="iteration"
+            type="number"
+            InputProps={{
+              inputProps: {
+                min: 0,
+              },
+            }}
+          />
+        )}
+      />
+      <Controller
+        name="convergence"
+        control={control}
+        rules={{ required: false, min: 0 }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="convergence"
             type="number"
             InputProps={{
               inputProps: {

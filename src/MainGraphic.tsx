@@ -18,13 +18,14 @@ import { selectAllStatisticByFile } from "./reducers/metaheuristique";
 function MainGraphic() {
   const { entities, ids } = useAppSelector((state) => state.metaheuristique);
 
-  const files = useMemo(() => {
-    return Object.keys(Object.groupBy(Object.values(entities), (v) => v.name));
+  const [value, setValue] = useState<number>(0);
 
+  const files = useMemo(() => {
+    return Object.keys(
+      Object.groupBy(Object.values(entities), (v) => v.name)
+    ).sort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entities.length]);
-
-  const [value, setValue] = useState<number>(0);
 
   const statistic = useAppSelector(selectAllStatisticByFile(files[value]));
 
@@ -41,6 +42,10 @@ function MainGraphic() {
     }
     return colors;
   }, [statistic, ids]);
+
+  const datas = useMemo(() => {
+    return Object.values(entities).filter(({ name }) => name === files[value]);
+  }, [entities, value, files]);
 
   return (
     <Grid container justifyContent={"center"} alignItems={"center"} spacing={2}>
@@ -91,13 +96,14 @@ function MainGraphic() {
                   background: theme.palette.background.default,
                 }}
               />
-              {Object.values(entities).map(({ metaheuristique, id }) => (
+              {datas.map(({ metaheuristique, id }) => (
                 <Line
                   yAxisId="numberOfBin"
                   name={metaheuristique}
                   type="monotone"
                   dataKey={`solutions[${id}].numberOfBin`}
                   stroke={colors[id]}
+                  strokeWidth={3}
                   isAnimationActive={false}
                 />
               ))}
@@ -147,13 +153,14 @@ function MainGraphic() {
                   paddingBottom: "10px",
                 }}
               />
-              {Object.values(entities).map(({ metaheuristique, id }) => (
+              {datas.map(({ metaheuristique, id }) => (
                 <Line
                   yAxisId="fitness"
                   type="monotone"
                   name={metaheuristique}
                   dataKey={`solutions[${id}].fitness`}
                   stroke={colors[id]}
+                  strokeWidth={3}
                   isAnimationActive={false}
                 />
               ))}
@@ -205,13 +212,14 @@ function MainGraphic() {
                   paddingBottom: "10px",
                 }}
               />
-              {Object.values(entities).map(({ metaheuristique, id }) => (
+              {datas.map(({ metaheuristique, id }) => (
                 <Line
                   yAxisId="time"
                   type="monotone"
                   name={metaheuristique}
                   dataKey={`solutions[${id}].time`}
                   stroke={colors[id]}
+                  strokeWidth={3}
                   isAnimationActive={false}
                 />
               ))}

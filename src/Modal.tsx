@@ -9,7 +9,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import "./App.css";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import {
@@ -43,6 +43,16 @@ function Modal({
     };
     reader.readAsText(file);
   }
+
+  const items = useMemo(() => {
+    return Object.entries(files)
+      .sort()
+      .map(([key, value]) => (
+        <MenuItem key={key} value={value}>
+          {key}
+        </MenuItem>
+      ));
+  }, [files]);
 
   return (
     <Dialog
@@ -96,11 +106,7 @@ function Modal({
             label="Fichier"
             labelId="select-fichier"
           >
-            {Object.entries(files).map(([key, value]) => (
-              <MenuItem key={key} value={value}>
-                {key}
-              </MenuItem>
-            ))}
+            {items}
           </Select>
           <label>
             <input

@@ -18,6 +18,7 @@ export default function FormRecuitSimuleConfig({ id }: { id: number }) {
       iterationByTemperature: 0,
       temperature: 0,
       temperatureDecrease: 0,
+      convergence: 0,
     },
   });
 
@@ -47,6 +48,23 @@ export default function FormRecuitSimuleConfig({ id }: { id: number }) {
           <TextField
             {...field}
             label="iteration"
+            type="number"
+            InputProps={{
+              inputProps: {
+                min: 0,
+              },
+            }}
+          />
+        )}
+      />
+      <Controller
+        name="convergence"
+        control={control}
+        rules={{ required: false, min: 0 }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="convergence"
             type="number"
             InputProps={{
               inputProps: {
