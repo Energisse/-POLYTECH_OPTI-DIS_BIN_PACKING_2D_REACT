@@ -4,6 +4,7 @@ import {
   Label,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -12,6 +13,9 @@ import {
 import { useAppSelector } from "../hooks";
 
 export default function Statistic({ id }: { id: number }) {
+  const minBin = useAppSelector(
+    (state) => state.metaheuristique.entities[id].minBin
+  );
   const fitness = useAppSelector(
     (state) => state.metaheuristique.entities[id].statistic
   );
@@ -82,6 +86,12 @@ export default function Statistic({ id }: { id: number }) {
               <YAxis yAxisId="numberOfBin" type="number">
                 <Label value="Nombre de bin" position="center" angle={-90} />
               </YAxis>
+              <ReferenceLine
+                yAxisId="numberOfBin"
+                y={minBin}
+                stroke="red"
+                label="Min"
+              />
               <Tooltip
                 contentStyle={{
                   background: theme.palette.background.default,

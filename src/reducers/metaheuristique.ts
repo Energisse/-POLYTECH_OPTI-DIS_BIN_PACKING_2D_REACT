@@ -46,6 +46,7 @@ export interface MetaheuristiqueState {
         interval: number,
         iterationCount: number
     },
+    minBin: number,
     state: "idle" | "running" | "paused" | "fnished" | "convergence",
     config?: TabouConfig | GenetiqueConfig | RecuitSimuleConfig | HillClimbingConfig,
     statistic: MetaheuristiqueStatistic[],
@@ -183,11 +184,13 @@ const methaeuristiqueSlice = createSlice({
             rawDataSet: string,
             metaheuristique: Metaheuristiques,
         }>) {
+            const dataset = new DataSet(rawDataSet);
             metaheuristiqueAdapter.addOne(state, {
                 id: state.ids.length.toString(),
-                name: new DataSet(rawDataSet).name,
+                name: dataset.name,
                 metaheuristique,
                 rawDataSet,
+                minBin: dataset.minBinAmount,
                 speed: {
                     interval: 1000,
                     iterationCount: 1
