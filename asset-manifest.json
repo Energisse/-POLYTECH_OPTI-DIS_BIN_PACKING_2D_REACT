@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/css/main.cf97dfea.css",
-    "main.js": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/main.ea1b24a8.js",
+    "main.js": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/main.f8527cf6.js",
     "static/js/192.66ac7070.chunk.js": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/192.66ac7070.chunk.js",
     "static/js/453.8cc0e317.chunk.js": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/453.8cc0e317.chunk.js",
     "index.html": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/index.html",
     "main.cf97dfea.css.map": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/css/main.cf97dfea.css.map",
-    "main.ea1b24a8.js.map": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/main.ea1b24a8.js.map",
+    "main.f8527cf6.js.map": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/main.f8527cf6.js.map",
     "192.66ac7070.chunk.js.map": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/192.66ac7070.chunk.js.map",
     "453.8cc0e317.chunk.js.map": "/POLYTECH_OPTI-DIS_BIN_PACKING_2D_REACT/static/js/453.8cc0e317.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.cf97dfea.css",
-    "static/js/main.ea1b24a8.js"
+    "static/js/main.f8527cf6.js"
   ]
 }
