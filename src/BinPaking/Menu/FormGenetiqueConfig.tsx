@@ -7,7 +7,7 @@ import { GenetiqueConfig } from "polytech_opti-dis_bin_packing_2d";
 import { useEffect } from "react";
 import isEqual from "lodash.isequal";
 
-export default function FormGenetiqueConfig({ id }: { id: number }) {
+export default function FormGenetiqueConfig({ id }: { id: string }) {
   const config = useAppSelector(
     (state) => state.metaheuristique.entities[id].config
   );
@@ -30,7 +30,7 @@ export default function FormGenetiqueConfig({ id }: { id: number }) {
   const onSubmit: SubmitHandler<TabouConfig> = (data) => {
     dispatch(
       editConfig({
-        id: 0,
+        id,
         config: data,
       })
     );

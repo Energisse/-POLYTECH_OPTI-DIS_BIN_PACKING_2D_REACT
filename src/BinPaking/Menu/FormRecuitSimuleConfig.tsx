@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { editConfig } from "../../reducers/metaheuristique";
 import isEqual from "lodash.isequal";
 
-export default function FormRecuitSimuleConfig({ id }: { id: number }) {
+export default function FormRecuitSimuleConfig({ id }: { id: string }) {
   const config = useAppSelector(
     (state) => state.metaheuristique.entities[id].config
   );
@@ -32,7 +32,7 @@ export default function FormRecuitSimuleConfig({ id }: { id: number }) {
   const onSubmit: SubmitHandler<TabouConfig> = (data) => {
     dispatch(
       editConfig({
-        id: 0,
+        id,
         config: data,
       })
     );

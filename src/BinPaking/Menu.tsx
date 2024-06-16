@@ -20,7 +20,7 @@ import FormHillClimbingConfig from "./Menu/FormHillClimbingConfig";
 import FormRecuitSimuleConfig from "./Menu/FormRecuitSimuleConfig";
 import FormTabouConfig from "./Menu/FormTabouConfig";
 
-export default function Menu({ id }: { id: number }) {
+export default function Menu({ id }: { id: string }) {
   const dispatch = useAppDispatch();
   const speed = useAppSelector(
     (state) => state.metaheuristique.entities[id].speed
@@ -61,7 +61,7 @@ export default function Menu({ id }: { id: number }) {
       case "Recuit simulé":
         return <FormRecuitSimuleConfig id={id} />;
       case "Hill Climbing":
-        return <FormHillClimbingConfig />;
+        return <FormHillClimbingConfig id={id} />;
       case "Genetique":
         return <FormGenetiqueConfig id={id} />;
     }

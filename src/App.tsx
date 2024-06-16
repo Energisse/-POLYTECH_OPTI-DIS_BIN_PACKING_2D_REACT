@@ -41,7 +41,7 @@ function App() {
   }
 
   function handleMainMenu() {
-    dispatch(setCurrentId(-1));
+    dispatch(setCurrentId(""));
   }
 
   const buttons = useMemo(() => {
@@ -52,7 +52,7 @@ function App() {
         <Divider key={name}>{name}</Divider>
         {meta!.map((m) => (
           <Grid item xs={12}>
-            <ButtonPercent id={+m.id} key={m.id} />
+            <ButtonPercent id={m.id} key={m.id} />
           </Grid>
         ))}
       </>
@@ -110,8 +110,8 @@ function App() {
                 </Paper>
               </Grid>
               <Grid item flex={1}>
-                {current !== -1 && <Solution id={current} key={current} />}
-                {current === -1 && <MainGraphic />}
+                {current !== "" && <Solution id={current} key={current} />}
+                {current === "" && <MainGraphic />}
               </Grid>
             </Grid>
           </Grid>

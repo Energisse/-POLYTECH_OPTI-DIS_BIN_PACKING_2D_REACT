@@ -4,7 +4,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useAppDispatch } from "../../hooks";
 import { editConfig } from "../../reducers/metaheuristique";
 
-export default function FormHillClimbingConfig() {
+export default function FormHillClimbingConfig({ id }: { id: string }) {
   const { handleSubmit } = useForm<HillClimbingConfig>();
 
   const dispatch = useAppDispatch();
@@ -12,7 +12,7 @@ export default function FormHillClimbingConfig() {
   const onSubmit: SubmitHandler<TabouConfig> = (data) => {
     dispatch(
       editConfig({
-        id: 0,
+        id,
         config: data,
       })
     );

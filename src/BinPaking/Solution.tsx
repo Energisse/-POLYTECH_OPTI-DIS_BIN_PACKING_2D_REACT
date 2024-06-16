@@ -4,7 +4,7 @@ import Affichage from "./Affichage";
 import DatasetProperty from "./DatasetProperty";
 import Statistic from "./Statistic";
 
-function Solution({ id }: { id: number }) {
+function Solution({ id }: { id: string }) {
   return (
     <Grid container spacing={2}>
       <Grid item xs={2}>

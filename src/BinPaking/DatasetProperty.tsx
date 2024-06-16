@@ -11,7 +11,7 @@ import { useAppSelector } from "../hooks";
 import { DataSet } from "polytech_opti-dis_bin_packing_2d";
 import { useMemo } from "react";
 
-export default function DatasetProperty({ id }: { id: number }) {
+export default function DatasetProperty({ id }: { id: string }) {
   const rawDataSet = useAppSelector(
     (state) => state.metaheuristique.entities[id].rawDataSet
   );

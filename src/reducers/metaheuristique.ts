@@ -2,6 +2,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { createEntityAdapter, createSelector, createSlice } from '@reduxjs/toolkit';
 import { DataSet, GenetiqueConfig, HillClimbingConfig, RecuitSimuleConfig, TabouConfig } from 'polytech_opti-dis_bin_packing_2d';
 import { RootState } from '../store';
+import { v4 as uuidv4 } from 'uuid';
 
 Worker.prototype.emit = function (...data) {
     this.postMessage({ type: data[0], data: data[1] });
@@ -53,12 +54,12 @@ export interface MetaheuristiqueState {
     binPakings: BinPackingSvgs
 }
 
-const workers: Record<number, Worker> = {}
+const workers: Record<string, Worker> = {}
 
 export const rehydrateMiddleware: any = (store: RootState) => (next: (action: PayloadAction<RootState>) => any) => (action: PayloadAction<RootState>) => {
     if (action.type === 'persist/REHYDRATE' && action.payload) {
         action.payload.metaheuristique.ids.forEach((id: string) => {
-            createWorker(+id)
+            createWorker(id)
         })
         action.payload.metaheuristique.ids.forEach((id: string) => {
             action.payload.metaheuristique.entities[id].state = "fnished"
@@ -70,13 +71,13 @@ export const rehydrateMiddleware: any = (store: RootState) => (next: (action: Pa
 const metaheuristiqueAdapter = createEntityAdapter<MetaheuristiqueState>({})
 
 type MetaheuristiqueSlice = {
-    currentId: number;
+    currentId: string;
     files: Record<string, string>;
 } & ReturnType<typeof metaheuristiqueAdapter['getInitialState']>;
 
 const initialState = {
     ...metaheuristiqueAdapter.getInitialState(),
-    currentId: -1,
+    currentId: "",
     files: {}
 } satisfies MetaheuristiqueSlice as MetaheuristiqueSlice
 
@@ -85,12 +86,12 @@ const methaeuristiqueSlice = createSlice({
     initialState,
     reducers: {
         setSpeed(state, { payload: { id, ...speed } }: PayloadAction<{
-            id: number,
+            id: string,
             interval: number,
             iterationCount: number
         }>) {
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     speed
                 }
@@ -99,12 +100,12 @@ const methaeuristiqueSlice = createSlice({
         },
 
         setState(state, { payload: { id, state: _state } }: PayloadAction<{
-            id: number,
+            id: string,
             state: "idle" | "running" | "paused" | "fnished" | "convergence" | "step"
         }>) {
             if (state.entities[id].state === "fnished") {
                 metaheuristiqueAdapter.updateOne(state, {
-                    id: id.toString(),
+                    id,
                     changes: {
                         statistic: [],
                     }
@@ -129,40 +130,40 @@ const methaeuristiqueSlice = createSlice({
                     break
             }
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     state: _state
                 }
             })
         },
         addFitness(state, { payload: { id, stats } }: PayloadAction<{
-            id: number,
+            id: string,
             stats: Array<MetaheuristiqueStatistic>
         }>) {
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     statistic: state.entities[id].statistic.concat(stats)
                 }
             })
         },
         setConfig(state, { payload: { id, config } }: PayloadAction<{
-            id: number,
+            id: string,
             config: MetaheuristiqueConfigs
         }>) {
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     config
                 }
             })
         },
         editConfig(state, { payload: { id, config } }: PayloadAction<{
-            id: number,
+            id: string,
             config: MetaheuristiqueConfigs
         }>) {
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     config
                 }
@@ -170,11 +171,11 @@ const methaeuristiqueSlice = createSlice({
             workers[id].emit("config", config)
         },
         setItems(state, { payload: { id, items } }: PayloadAction<{
-            id: number,
+            id: string,
             items: BinPackingSvgs[]
         }>) {
             metaheuristiqueAdapter.updateOne(state, {
-                id: id.toString(),
+                id,
                 changes: {
                     binPakings: items.at(-1)!
                 }
@@ -186,7 +187,7 @@ const methaeuristiqueSlice = createSlice({
         }>) {
             const dataset = new DataSet(rawDataSet);
             metaheuristiqueAdapter.addOne(state, {
-                id: state.ids.length.toString(),
+                id: uuidv4(),
                 name: dataset.name,
                 metaheuristique,
                 rawDataSet,
@@ -204,16 +205,16 @@ const methaeuristiqueSlice = createSlice({
                 },
             })
 
-            createWorker(+state.ids.at(-1)!)
-            state.currentId = +state.ids.at(-1)!
+            createWorker(state.ids.at(-1)!)
+            state.currentId = state.ids.at(-1)!
         },
-        removeSolition(state, { payload: id }: PayloadAction<number>) {
+        removeSolition(state, { payload: id }: PayloadAction<string>) {
             metaheuristiqueAdapter.removeOne(state, id.toString())
             workers[id].terminate()
             delete workers[id]
-            if (state.currentId === id) state.currentId = -1
+            if (state.currentId === id) state.currentId = ""
         },
-        setCurrentId(state, { payload: id }: PayloadAction<number>) {
+        setCurrentId(state, { payload: id }: PayloadAction<string>) {
             state.currentId = id
         },
         addFile(state, { payload: file }: PayloadAction<string>) {
@@ -230,7 +231,7 @@ const methaeuristiqueSlice = createSlice({
     },
 })
 
-function createWorker(id: number) {
+function createWorker(id: string) {
     import("../store").then(({ default: store }) => {
         const worker = new Worker(new URL("../utils/worker.ts", import.meta.url))
         workers[id] = worker

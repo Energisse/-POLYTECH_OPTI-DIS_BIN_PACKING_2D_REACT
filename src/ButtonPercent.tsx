@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "./hooks";
 import { removeSolition, setCurrentId } from "./reducers/metaheuristique";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function ButtonPercent({ id }: { id: number }) {
+export default function ButtonPercent({ id }: { id: string }) {
   const state = useAppSelector(
     (state) => state.metaheuristique.entities[id].state
   );
@@ -13,11 +13,11 @@ export default function ButtonPercent({ id }: { id: number }) {
   );
   const dispatch = useAppDispatch();
 
-  function handleRemove(id: number) {
+  function handleRemove(id: string) {
     dispatch(removeSolition(id));
   }
 
-  function handleClick(id: number) {
+  function handleClick(id: string) {
     dispatch(setCurrentId(id));
   }
 

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { useAppSelector } from "../hooks";
 
-export default function Statistic({ id }: { id: number }) {
+export default function Statistic({ id }: { id: string }) {
   const minBin = useAppSelector(
     (state) => state.metaheuristique.entities[id].minBin
   );

@@ -7,7 +7,7 @@ import ItemSVG from "../ItemSVG";
 import { useAppSelector } from "../hooks";
 import { DataSet } from "polytech_opti-dis_bin_packing_2d";
 
-export default function Affichage({ id }: { id: number }) {
+export default function Affichage({ id }: { id: string }) {
   const parent = useRef(null);
   const Viewer = useRef<UncontrolledReactSVGPanZoom>(null);
   const { width } = useParentSize(parent);
